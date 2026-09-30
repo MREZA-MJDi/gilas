@@ -22,10 +22,6 @@
         </div>
     </div>
 
-    <header class="mini-nav" aria-label="ناوبری اصلی">
-        <span class="mini-nav__year">۲۰۲۵</span>
-    </header>
-
     <main id="main" data-page-id="home">
         <section class="tree-stage" aria-label="Cicada Tree">
             <div class="tree-stage__video" aria-hidden="true">
