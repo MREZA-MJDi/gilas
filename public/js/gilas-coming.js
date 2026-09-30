@@ -1,98 +1,261 @@
 (() => {
-  const ready = (fn) => document.readyState === "loading"
-    ? document.addEventListener("DOMContentLoaded", fn, { once: true })
-    : fn();
-
-  ready(() => {
+  const start = () => {
     if (!window.gsap) return;
 
-    const cleanups = [];
-    const ctx = gsap.context(() => {
-      initAmbient();
-      initLeader();
-      initReveal();
-      initForm();
-    });
-    window.gilasGsapContext = ctx;
+    const tree = document.querySelector('[data-tree]');
+    if (!tree) return;
 
-    window.addEventListener("pagehide", () => {
-      cleanups.forEach((fn) => fn());
-      ctx.revert();
-    }, { once: true });
+    const hasDraw = !!window.DrawSVGPlugin;
+    const hasMotion = !!window.MotionPathPlugin;
+    const hasScroll = !!window.ScrollTrigger;
+    const hasEase = !!window.CustomEase;
+
+    if (hasDraw) gsap.registerPlugin(DrawSVGPlugin);
+    if (hasMotion) gsap.registerPlugin(MotionPathPlugin);
+    if (hasScroll) gsap.registerPlugin(ScrollTrigger);
+    if (hasEase) {
+      try { CustomEase.create('clip', '.57,0,.43,1'); } catch (_) {}
+    }
+
+    const cleanups = [];
+
+    initAmbient();
+    initCounter();
+    initTree();
+    initHover();
 
     function initAmbient() {
-      const spot = document.querySelector("[data-spot]");
-      const pivot = document.querySelector("[data-beam]");
-      if (spot) {
-        const moveSpot = (time) => {
-          const w = innerWidth, h = innerHeight;
+      const spot = document.querySelector('[data-spot]');
+      const beam = document.querySelector('[data-beam]');
+      if (spot && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const move = (time) => {
           const t = time / 1000;
-          const x = w * (.52 + .28 * Math.sin(t * .083) + .12 * Math.sin(t * .191));
-          const y = h * (.46 + .22 * Math.sin(t * .117) + .10 * Math.sin(t * .237));
+          const x = innerWidth * (0.5 + 0.23 * Math.sin(t * 0.083) + 0.1 * Math.sin(t * 0.19));
+          const y = innerHeight * (0.5 + 0.19 * Math.sin(t * 0.117) + 0.08 * Math.sin(t * 0.237));
           gsap.set(spot, { x, y });
         };
-        gsap.ticker.add(moveSpot);
-        cleanups.push(() => gsap.ticker.remove(moveSpot));
+        gsap.ticker.add(move);
+        cleanups.push(() => gsap.ticker.remove(move));
       }
-      if (pivot && matchMedia("(pointer:fine) and (prefers-reduced-motion:no-preference)").matches) {
+      if (beam && matchMedia('(pointer:fine) and (prefers-reduced-motion: no-preference)').matches) {
         const onMove = (e) => {
-          const nx = (e.clientX / innerWidth - .5) * 2;
-          const ny = (e.clientY / innerHeight - .5) * 2;
-          gsap.to(pivot, { rotate: nx * 1.6, y: ny * 4, duration: .8, ease: "power3.out", overwrite: true });
+          const nx = (e.clientX / innerWidth - 0.5) * 2;
+          const ny = (e.clientY / innerHeight - 0.5) * 2;
+          gsap.to(beam, { rotation: nx * 1.35, y: ny * 5, duration: .8, ease: 'power3.out', overwrite: true });
         };
-        addEventListener("pointermove", onMove, { passive: true });
-        cleanups.push(() => removeEventListener("pointermove", onMove));
+        addEventListener('pointermove', onMove, { passive: true });
+        cleanups.push(() => removeEventListener('pointermove', onMove));
       }
-      const dust = document.querySelector("[data-dust]");
-      const cx = dust?.getContext("2d");
+
+      const dust = document.querySelector('[data-dust]');
+      const cx = dust?.getContext('2d');
       if (cx) {
-        let w=0,h=0;
-        const specks = Array.from({length:34},()=>({x:Math.random(),y:Math.random(),r:.5+Math.random()*1.5,v:.02+Math.random()*.05,a:.1+Math.random()*.28,p:Math.random()*Math.PI*2}));
-        const resize=()=>{w=dust.clientWidth;h=dust.clientHeight;const d=Math.min(devicePixelRatio||1,2);dust.width=w*d;dust.height=h*d;cx.setTransform(d,0,0,d,0,0)};
-        resize(); addEventListener("resize",resize);
-        const draw=(time,delta)=>{
-          if(!w||!h)return;
-          const dt=Math.min(delta,100)/1000;
-          cx.clearRect(0,0,w,h);cx.fillStyle="#F0B44E";
-          specks.forEach(s=>{s.y-=s.v*dt;if(s.y<-.02){s.y=1.02;s.x=Math.random()}const x=s.x*w+Math.sin(time*.0026+s.p)*10;const y=s.y*h;cx.globalAlpha=s.a;cx.beginPath();cx.arc(x,y,s.r,0,Math.PI*2);cx.fill()});cx.globalAlpha=1;
+        let w = 0, h = 0;
+        const specks = Array.from({ length: 28 }, () => ({
+          x: Math.random(), y: Math.random(), r: .4 + Math.random() * 1.3,
+          v: .018 + Math.random() * .045, a: .08 + Math.random() * .2, p: Math.random() * Math.PI * 2
+        }));
+        const resize = () => {
+          w = dust.clientWidth; h = dust.clientHeight;
+          const d = Math.min(devicePixelRatio || 1, 2);
+          dust.width = w * d; dust.height = h * d;
+          cx.setTransform(d, 0, 0, d, 0, 0);
         };
-        gsap.ticker.add(draw); cleanups.push(()=>{gsap.ticker.remove(draw);removeEventListener("resize",resize)});
+        resize();
+        addEventListener('resize', resize);
+        const draw = (time, delta) => {
+          if (!w || !h) return;
+          const dt = Math.min(delta, 100) / 1000;
+          cx.clearRect(0, 0, w, h);
+          cx.fillStyle = '#ffffff';
+          for (const s of specks) {
+            s.y -= s.v * dt;
+            if (s.y < -.02) { s.y = 1.02; s.x = Math.random(); }
+            const x = s.x * w + Math.sin(time * .0024 + s.p) * 9;
+            const y = s.y * h;
+            cx.globalAlpha = s.a;
+            cx.beginPath(); cx.arc(x, y, s.r, 0, Math.PI * 2); cx.fill();
+          }
+          cx.globalAlpha = 1;
+        };
+        gsap.ticker.add(draw);
+        cleanups.push(() => {
+          gsap.ticker.remove(draw);
+          removeEventListener('resize', resize);
+        });
       }
-      const grain = document.querySelector("[data-grain]");
-      const gcx = grain?.getContext("2d");
-      if (gcx) {
-        const tile=document.createElement("canvas");tile.width=96;tile.height=96;const tc=tile.getContext("2d");const img=tc.createImageData(96,96);
-        for(let i=0;i<img.data.length;i+=4){const v=96+Math.random()*120;img.data[i]=img.data[i+1]=img.data[i+2]=v;img.data[i+3]=255}tc.putImageData(img,0,0);
-        const pattern=gcx.createPattern(tile,"repeat"); let acc=0,w=0,h=0;
-        const resize=()=>{w=innerWidth;h=innerHeight;grain.width=w;grain.height=h;gcx.fillStyle=pattern}; resize();addEventListener("resize",resize);
-        const draw=(time,delta)=>{acc+=delta/1000;if(acc<1/24)return;acc%=1/24;const ox=Math.floor(Math.random()*96),oy=Math.floor(Math.random()*96);gcx.setTransform(1,0,0,1,-ox,-oy);gcx.fillRect(ox,oy,w,h)};
-        gsap.ticker.add(draw);cleanups.push(()=>{gsap.ticker.remove(draw);removeEventListener("resize",resize)});
+
+      const grain = document.querySelector('[data-grain]');
+      const gcx = grain?.getContext('2d');
+      if (gcx && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const tile = document.createElement('canvas');
+        tile.width = 96; tile.height = 96;
+        const tc = tile.getContext('2d');
+        const img = tc.createImageData(96, 96);
+        for (let i = 0; i < img.data.length; i += 4) {
+          const v = 90 + Math.random() * 120;
+          img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255;
+        }
+        tc.putImageData(img, 0, 0);
+        const pattern = gcx.createPattern(tile, 'repeat');
+        let acc = 0;
+        const draw = (_, delta) => {
+          acc += delta / 1000;
+          if (acc < 1/20) return;
+          acc %= 1/20;
+          const ox = Math.floor(Math.random() * 96);
+          const oy = Math.floor(Math.random() * 96);
+          gcx.setTransform(1, 0, 0, 1, -ox, -oy);
+          gcx.fillStyle = pattern;
+          gcx.fillRect(ox, oy, innerWidth, innerHeight);
+        };
+        gsap.ticker.add(draw);
+        cleanups.push(() => gsap.ticker.remove(draw));
       }
     }
 
-    function initLeader() {
-      const block=document.querySelector("[data-leader]"); if(!block)return;
-      const target=new Date(block.dataset.open).getTime(); if(Number.isNaN(target))return;
-      const sweep=block.querySelector("[data-leader-sweep]"), num=block.querySelector("[data-leader-num]"), key=block.querySelector("[data-leader-key]"), sub=block.querySelector("[data-leader-sub]");
-      const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches; let lastDay=-1,lastMin=-1;
-      const write=()=>{const now=Date.now();if(!reduce&&sweep)gsap.set(sweep,{rotation:(now%60000)/60000*360});const ms=target-now;if(ms<=0){num.textContent="۰";key.textContent="اکنون باز است";sub.textContent="";return}const days=Math.floor(ms/86400000),mins=Math.floor(ms/60000)%60,hours=Math.floor(ms/3600000)%24;if(days!==lastDay){lastDay=days;num.textContent=String(days).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);key.textContent=days===1?"یک روز تا افتتاح":"روز تا افتتاح"}if(mins!==lastMin){lastMin=mins;sub.textContent=hours+" ساعت و "+mins+" دقیقه"}};
+    function initCounter() {
+      const block = document.querySelector('[data-leader]');
+      if (!block) return;
+      const target = new Date(block.dataset.open).getTime();
+      if (Number.isNaN(target)) return;
+
+      const num = block.querySelector('[data-leader-num]');
+      const key = block.querySelector('[data-leader-key]');
+      const sub = block.querySelector('[data-leader-sub]');
+      const sweep = block.querySelector('[data-leader-sweep]');
+      let last = '';
+
+      const fa = (value) => String(value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+      const write = () => {
+        const diff = target - Date.now();
+        if (diff <= 0) {
+          num.textContent = '۰';
+          key.textContent = 'اکنون باز است';
+          sub.textContent = '';
+          return;
+        }
+        const days = Math.floor(diff / 86400000);
+        const hours = Math.floor(diff / 3600000) % 24;
+        const minutes = Math.floor(diff / 60000) % 60;
+        const value = days + ':' + hours + ':' + minutes;
+        if (value !== last) {
+          last = value;
+          num.textContent = fa(days);
+          key.textContent = days === 1 ? 'یک روز تا افتتاح' : 'روز تا افتتاح';
+          sub.textContent = fa(hours) + ' ساعت و ' + fa(minutes) + ' دقیقه';
+        }
+        if (sweep && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          const sec = (Date.now() % 60000) / 60000 * 360;
+          gsap.set(sweep, { rotation: sec });
+        }
+      };
       write();
-      if(reduce){const id=setInterval(write,30000);cleanups.push(()=>clearInterval(id))}else{gsap.ticker.add(write);cleanups.push(()=>gsap.ticker.remove(write))}
+      const id = setInterval(write, 1000);
+      cleanups.push(() => clearInterval(id));
     }
 
-    function initReveal() {
-      const slide=document.querySelector("[data-slide]"), leader=document.querySelector("[data-leader]"), lines=gsap.utils.toArray(".line-inner"), rule=document.querySelector(".rule-bar");
-      const tl=gsap.timeline({defaults:{ease:"power3.out"}});
-      if(slide){gsap.set(slide,{opacity:0,y:18,scale:.988});tl.to(slide,{opacity:1,y:0,scale:1,duration:1.1},.1)}
-      if(lines.length){gsap.set(lines,{yPercent:112});tl.to(lines,{yPercent:0,duration:1.05,stagger:.1,ease:"power4.out"},.35)}
-      if(rule){gsap.set(rule,{scaleX:0,transformOrigin:"right center"});tl.to(rule,{scaleX:1,duration:1.2,ease:"power2.inOut"},.8)}
-      if(leader){gsap.set(leader,{opacity:0,scale:.9});tl.to(leader,{opacity:1,scale:1,duration:.9,ease:"back.out(1.4)"},1)}
+    function initTree() {
+      const svg = tree.querySelector('.tree-svg');
+      const tl = gsap.timeline({
+        defaults: { duration: .8, ease: 'power2.out' }
+      });
+
+      gsap.set(tree, { opacity: 1, scale: .84, yPercent: 7 });
+      gsap.set(svg, { display: 'block' });
+
+      const paths = [
+        ['.tree-svg__bottom', '100%'],
+        ['.tree-svg__top', '100%'],
+        ['.tree-svg__left', '75%'],
+        ['.tree-svg__right', '75%'],
+        ['.tree-svg__right-top', '85%'],
+        ['.tree-svg__left-top', '85%']
+      ];
+
+      if (hasDraw) {
+        for (const [selector, end] of paths) {
+          gsap.set(selector, { drawSVG: '0%', strokeWidth: 33 });
+        }
+        tl.to(tree, { scale: 1, yPercent: 0, duration: 1.15, ease: 'power3.out' }, 0)
+          .to('.tree-svg__bottom', { drawSVG: '100%', duration: .62 }, .05)
+          .to('.tree-svg__top', { drawSVG: '100%', duration: .62 }, .22)
+          .to('.tree-svg__left', { drawSVG: '75%', rotation: 25, transformOrigin: 'bottom right', duration: .62 }, .22)
+          .to('.tree-svg__right', { drawSVG: '75%', rotation: -25, transformOrigin: 'bottom left', duration: .62 }, .22)
+          .to('.tree-svg__right-top', { drawSVG: '85%', rotation: -13, transformOrigin: 'bottom left', duration: .62 }, .22)
+          .to('.tree-svg__left-top', { drawSVG: '85%', rotation: 13, transformOrigin: 'bottom right', duration: .62 }, .22)
+          .to('.tree-svg__branches', { drawSVG: '100%', strokeWidth: 3, rotation: 0, duration: .55 }, .74)
+          .to('.tree-svg__bottom', { strokeWidth: 3, duration: .55 }, .74);
+      } else {
+        tl.to(tree, { scale: 1, yPercent: 0, duration: 1.1, ease: 'power3.out' }, 0);
+      }
+
+      tl.to('.tree-circle__big', { scale: .65, duration: .45 }, .9)
+        .to('.tree-circle__small', { scale: .72, duration: .45 }, .9)
+        .to('.tree-circle__big', { scale: 1, duration: .45, ease: 'power2.out' }, 1.35)
+        .to('.tree-circle__small', { scale: 1, duration: .45, ease: 'power2.out' }, 1.35)
+        .to('.tree-ball', { opacity: 1, scale: 1, duration: .4, stagger: .06 }, 1.55);
+
+      if (hasScroll) {
+        const scrollTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: '#main',
+            start: 'top top',
+            end: '+=4200',
+            scrub: 1.1,
+            invalidateOnRefresh: true
+          }
+        });
+        scrollTl
+          .to(tree, { scale: 1.07, yPercent: -2, duration: 1.7, ease: 'none' })
+          .to(tree.querySelector('.tree-wrapp'), { y: '-=0.16rem', duration: 1.2, ease: 'none' }, '<');
+      }
+
+      tl.eventCallback('onComplete', () => {
+        initBallMotion();
+      });
     }
 
-    function initForm() {
-      const form=document.querySelector("[data-notify]");if(!form)return;
-      const field=form.querySelector(".notify-field"),done=form.querySelector(".notify-done"),status=form.querySelector(".notify-status");
-      form.addEventListener("submit",(e)=>{e.preventDefault();if(!form.checkValidity()){form.reportValidity();return}status.textContent="ثبت شد؛ هنگام افتتاح فقط یک پیام برایتان می‌فرستیم.";gsap.timeline().to(field,{opacity:0,y:-8,duration:.25}).set(field,{display:"none"}).call(()=>done.hidden=false).set(done,{opacity:0,y:10}).to(done,{opacity:1,y:0,duration:.45,ease:"back.out(1.5)"})});
+    function initBallMotion() {
+      if (!hasMotion) return;
+      document.querySelectorAll('.tree-ball').forEach((ball) => {
+        gsap.to(ball, {
+          y: '+=6',
+          duration: 1.9 + Math.random() * .7,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: Math.random() * .5
+        });
+      });
     }
-  });
+
+    function initHover() {
+      const circle = gsap.timeline({ paused: true })
+        .to('.tree-circle__big', { boxShadow: '0 0 0 3px var(--tree-line)', duration: .4, ease: 'power1.out' })
+        .to('.tree-circle__small', { boxShadow: '0 0 0 1px var(--tree-line)', duration: .4, ease: 'power1.out' }, '<');
+
+      document.querySelectorAll('.tree-ball').forEach((ball) => {
+        const pos = ball.dataset.position;
+        const branch = document.querySelector('.tree-svg__branches[data-position="' + pos + '"]');
+        if (!branch) return;
+
+        const hover = gsap.timeline({ paused: true });
+        hover
+          .to(ball.querySelector('.tree-ball__1'), { scale: 2.25, duration: .4, ease: 'power1.inOut' })
+          .to(branch, { strokeWidth: 8, duration: .4, ease: 'power1.inOut' }, '<')
+          .set(ball.querySelector('.tree-ball__2'), { opacity: 1 })
+          .set(ball.querySelector('.tree-ball__3'), { opacity: 1 });
+
+        ball.addEventListener('pointerenter', () => { hover.play(); circle.play(); });
+        ball.addEventListener('pointerleave', () => { hover.reverse(); circle.reverse(); });
+      });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
 })();
