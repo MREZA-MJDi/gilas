@@ -29,6 +29,7 @@ class PublicMenuController extends Controller
     {
         $restaurant = $this->primaryRestaurantOrFail();
         $menu = $this->catalog->forRestaurant($restaurant)->values();
+        $sourceMenu = $menu;
 
         $selectedSlug = is_string($categorySlug) ? trim($categorySlug) : null;
 
@@ -39,8 +40,6 @@ class PublicMenuController extends Controller
                 ->filter(fn ($category) => $category->slug === $selectedSlug)
                 ->values();
         }
-
-        $sourceMenu = $this->catalog->forRestaurant($restaurant)->values();
 
         $featuredItems = $sourceMenu
             ->flatMap(fn ($category) => $category->items->map(
