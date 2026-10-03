@@ -6,7 +6,9 @@
     <meta name="theme-color" content="#0b090d">
     <meta name="description" content="خانه گیلاسی — تجربه‌ای برای دیدن، انتخاب کردن و ماندن.">
     <title>خانه گیلاسی</title>
-    @vite(['resources/css/landing.css', 'resources/js/landing.js'])
+    @unless(app()->environment('testing'))
+        @vite(['resources/css/landing.css', 'resources/js/landing.js'])
+    @endunless
 </head>
 <body class="gilas-landing">
     @include('components.footsteps')
