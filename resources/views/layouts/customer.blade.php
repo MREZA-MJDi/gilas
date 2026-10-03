@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0b090d">
-    <title>@yield('title', 'منوی خانه گیلاسی')</title>
-    <meta name="description" content="@yield('description', 'منوی دیجیتال و سفارش آنلاین خانه گیلاسی')">
+    <title>@yield('title', 'گیلاس')</title>
+    <meta name="description" content="@yield('description', 'منوی دیجیتال و سفارش آنلاین گیلاس')">
     @unless(app()->environment('testing'))
         @vite(['resources/css/customer.css', 'resources/js/customer.js'])
     @endunless
