@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Events\OrderCreated;
 use App\Enums\OrderType;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
@@ -38,7 +39,7 @@ class OrderService
         }
 
         try {
-            return DB::transaction(function () use ($restaurant, $data, $type, $idempotencyKey, $requestHash) {
+            $order = DB::transaction(function () use ($restaurant, $data, $type, $idempotencyKey, $requestHash) {
                 $this->assertOrderIsAllowed($restaurant, $type, $data);
                 $items = $this->prepareMenuItems($restaurant, $data['items'] ?? []);
 
@@ -155,6 +156,10 @@ class OrderService
 
                 return $order->load(['items.options', 'statusHistory']);
             });
+
+            event(new OrderCreated($order->id));
+
+            return $order;
         } catch (QueryException $exception) {
             if (!$idempotencyKey) {
                 throw $exception;
