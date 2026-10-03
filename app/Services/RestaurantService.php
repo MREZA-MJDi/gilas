@@ -3,10 +3,17 @@
 namespace App\Services;
 
 use App\Models\Restaurant;
+use App\Models\RestaurantTable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class RestaurantService
 {
+    public function __construct(
+        private readonly TableQrCodeService $qrCodes,
+    ) {
+    }
+
     public function create(array $data): Restaurant
     {
         return DB::transaction(function () use ($data) {
@@ -42,24 +49,37 @@ class RestaurantService
             return;
         }
 
-        $existing = $restaurant->tables()->pluck('number')->all();
-        $next = empty($existing) ? 1 : max($existing) + 1;
-
-        $rows = [];
-
-        for ($number = $next; $number < $next + $count; $number++) {
-            $rows[] = [
-                'restaurant_id' => $restaurant->id,
-                'name' => "میز {$number}",
-                'number' => $number,
-                'capacity' => $capacity,
-                'status' => 'available',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+        if ($count > 500) {
+            throw ValidationException::withMessages([
+                'count' => 'A maximum of 500 tables may be provisioned at once.',
+            ]);
         }
 
-        DB::table('restaurant_tables')->insert($rows);
+        if ($capacity < 1 || $capacity > 255) {
+            throw ValidationException::withMessages([
+                'capacity' => 'Table capacity must be between 1 and 255.',
+            ]);
+        }
+
+        DB::transaction(function () use ($restaurant, $count, $capacity) {
+            $lockedRestaurant = Restaurant::query()
+                ->lockForUpdate()
+                ->findOrFail($restaurant->id);
+
+            $next = ((int) $lockedRestaurant->tables()->max('number')) + 1;
+
+            for ($number = $next; $number < $next + $count; $number++) {
+                $table = RestaurantTable::create([
+                    'restaurant_id' => $lockedRestaurant->id,
+                    'name' => "میز {$number}",
+                    'number' => $number,
+                    'capacity' => $capacity,
+                    'status' => 'available',
+                    'is_active' => true,
+                ]);
+
+                $this->qrCodes->issue($table);
+            }
+        });
     }
 }
