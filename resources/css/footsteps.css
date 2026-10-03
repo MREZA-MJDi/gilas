@@ -1,0 +1,28 @@
+@layer components {
+    .footsteps-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        overflow: hidden;
+        color: var(--footsteps-color, var(--gilas-cherry));
+        opacity: .15;
+        mix-blend-mode: screen;
+        contain: strict;
+    }
+
+    .gilas-public .footsteps-layer { opacity: .14; }
+    .gilas-landing .footsteps-layer { --footsteps-color: var(--gilas-cherry); opacity: .20; }
+
+    @media (max-width: 640px) {
+        .gilas-public .footsteps-layer { opacity: .18; }
+        .gilas-landing .footsteps-layer { opacity: .13; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .footsteps-layer { display: none; }
+    }
+}
