@@ -21,6 +21,8 @@ class OrderService
                 ? $data['order_type']
                 : OrderType::from($data['order_type']);
 
+            $this->assertOrderContext($type, $data);
+
             $order = $restaurant->orders()->create([
                 'customer_id' => $data['customer_id'] ?? null,
                 'restaurant_table_id' => $data['restaurant_table_id'] ?? null,
@@ -42,13 +44,20 @@ class OrderService
             foreach ($data['items'] ?? [] as $itemData) {
                 $quantity = max(1, (int) ($itemData['quantity'] ?? 1));
                 $unitPrice = (int) $itemData['unit_price'];
-                $lineTotal = $unitPrice * $quantity;
+
+                $optionTotal = 0;
+                foreach ($itemData['options'] ?? [] as $option) {
+                    $optionTotal += (int) ($option['price_delta'] ?? 0);
+                }
+
+                $effectiveUnitPrice = $unitPrice + $optionTotal;
+                $lineTotal = $effectiveUnitPrice * $quantity;
 
                 $item = $order->items()->create([
                     'menu_item_id' => $itemData['menu_item_id'] ?? null,
                     'menu_item_variant_id' => $itemData['menu_item_variant_id'] ?? null,
                     'name' => $itemData['name'],
-                    'unit_price' => $unitPrice,
+                    'unit_price' => $effectiveUnitPrice,
                     'quantity' => $quantity,
                     'total_price' => $lineTotal,
                     'note' => $itemData['note'] ?? null,
@@ -82,10 +91,11 @@ class OrderService
     public function changeStatus(Order $order, OrderStatus $next, ?User $actor = null, ?string $note = null): Order
     {
         return DB::transaction(function () use ($order, $next, $actor, $note) {
-            $order = Order::query()->lockForUpdate()->find($order->id);
+            $orderId = $order->id;
+            $order = Order::query()->lockForUpdate()->find($orderId);
 
             if (!$order) {
-                throw (new ModelNotFoundException)->setModel(Order::class, [$order?->id]);
+                throw (new ModelNotFoundException)->setModel(Order::class, [$orderId]);
             }
 
             $current = $order->status;
@@ -122,6 +132,30 @@ class OrderService
 
             return $order->fresh(['statusHistory']);
         });
+    }
+
+    private function assertOrderContext(OrderType $type, array $data): void
+    {
+        $hasTable = !empty($data['restaurant_table_id']);
+        $hasAddress = !empty($data['customer_address_id']);
+
+        if ($type === OrderType::DineIn && !$hasTable) {
+            throw ValidationException::withMessages([
+                'restaurant_table_id' => 'A dine-in order requires a table.',
+            ]);
+        }
+
+        if ($type === OrderType::Delivery && !$hasAddress) {
+            throw ValidationException::withMessages([
+                'customer_address_id' => 'A delivery order requires a customer address.',
+            ]);
+        }
+
+        if ($type !== OrderType::DineIn && $hasTable) {
+            throw ValidationException::withMessages([
+                'restaurant_table_id' => 'Only dine-in orders may reference a restaurant table.',
+            ]);
+        }
     }
 
     private function generateOrderNumber(): string
