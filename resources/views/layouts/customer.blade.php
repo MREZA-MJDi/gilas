@@ -10,7 +10,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Estedad:wght@400;500;600;700&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @unless(app()->environment('testing'))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endunless
 </head>
 <body class="min-h-screen bg-[#120f0d] text-stone-100 antialiased">
     @yield('content')
