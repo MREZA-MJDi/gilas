@@ -41,7 +41,7 @@
     })->values()->all();
 @endphp
 
-@section('title', $restaurant->name . ' — منوی دیجیتال')
+@section('title', 'گیلاس — منوی دیجیتال')
 @section('description', 'منوی دیجیتال ' . $restaurant->name . ' برای میز ' . $table->number)
 
 @section('content')
@@ -56,7 +56,7 @@
             <div class="flex min-w-0 items-center gap-3">
                 <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-2xl border border-white/10 bg-white/8">
                     @if($logoUrl)
-                        <img src="{{ $logoUrl }}" alt="{{ $restaurant->name }}" class="size-full object-cover">
+                        <img src="{{ $logoUrl }}" alt="{{ $restaurant->name }}" class="size-full object-cover" width="40" height="40" decoding="async">
                     @else
                         <span class="text-lg font-bold text-rose-100">گ</span>
                     @endif
@@ -136,8 +136,8 @@
                                     <button type="button" data-open-item="{{ $item->id }}" class="block w-full text-right">
                                         <div class="relative aspect-[16/10] overflow-hidden bg-[#27201c]">
                                             @if($item->image_path)
-                                                <img src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}" alt="{{ $item->name }}" loading="lazy"
-                                                     class="size-full object-cover transition duration-700 group-hover:scale-105">
+                                                <img src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}" alt="{{ $item->name }}" loading="lazy" decoding="async" width="800" height="800"
+                                                     class="size-full object-contain p-[7%] transition duration-700 group-hover:scale-[1.035]">
                                             @else
                                                 <div class="grid size-full place-items-center bg-[radial-gradient(circle_at_30%_20%,rgba(244,114,182,.16),transparent_36%),linear-gradient(135deg,#2b211d,#171311)]"><span class="text-5xl font-bold text-white/10">گ</span></div>
                                             @endif
