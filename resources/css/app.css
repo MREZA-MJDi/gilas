@@ -13,20 +13,37 @@
 
 @layer components {
     :root {
-        --color-primary: #ee75d2;
-        --color-secondary: #75d8ee;
-        --color-tertiary: #deee75;
-        --color-quaternary: #9375ee;
-        --color-surface: #000;
+        --gilas-cherry: #f08aab;
+        --gilas-pink: #e85d9e;
+        --gilas-plum: #2a1830;
+        --gilas-cream: #f6ebdd;
+        --gilas-cyan: #79d8de;
+        --gilas-ink: #0b090d;
+
+        --color-primary: var(--gilas-cherry);
+        --color-secondary: var(--gilas-cyan);
+        --color-tertiary: #e4dd9a;
+        --color-quaternary: var(--gilas-pink);
+        --color-surface: var(--gilas-ink);
+        --color-on-surface: var(--gilas-cream);
+
+        --surface-1: #140f16;
+        --surface-2: #1d1520;
+        --surface-3: rgba(246, 235, 221, 0.055);
+        --line-soft: rgba(246, 235, 221, 0.11);
+        --text-muted: rgba(246, 235, 221, 0.62);
+        --accent-glow: rgba(240, 138, 171, 0.28);
+        --cyan-glow: rgba(121, 216, 222, 0.20);
+
         --bg: linear-gradient(
-            to bottom,
-            color-mix(in srgb, var(--color-quaternary), black 70%),
-            var(--color-surface)
+            155deg,
+            color-mix(in srgb, var(--gilas-plum), var(--gilas-ink) 58%),
+            var(--gilas-ink) 72%
         );
-        --color-on-surface: var(--color-primary);
-        --icon-filter: saturate(3.4) brightness(0.5) invert(1);
-        --ripple-filter: blur(1rem);
-        --hover-filter: brightness(1.2);
+
+        --icon-filter: saturate(1.15) brightness(0.88);
+        --ripple-filter: blur(0.9rem);
+        --hover-filter: brightness(1.14);
         --hexagon-size: clamp(42px, 8vmin, 92px);
         --gap: 0.1vmin;
     }
@@ -302,7 +319,7 @@
     body {
         margin: 0;
         overflow-x: hidden;
-        background: #120f0d;
+        background: var(--gilas-ink);
     }
 }
 
@@ -334,8 +351,8 @@
         position: relative;
         overflow: hidden;
         background:
-            radial-gradient(circle at 48% 48%, rgba(238,117,210,.08), transparent 26%),
-            radial-gradient(circle at 82% 18%, rgba(117,216,238,.06), transparent 24%),
+            radial-gradient(circle at 48% 48%, color-mix(in srgb, var(--gilas-cherry), transparent 92%), transparent 26%),
+            radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--gilas-cyan), transparent 94%), transparent 24%),
             var(--bg);
     }
 
@@ -374,9 +391,9 @@
         z-index: 7;
         width: min(340px, 34vw);
         padding: 20px 22px;
-        border: 1px solid rgba(255,255,255,.12);
+        border: 1px solid var(--line-soft);
         border-radius: 24px;
-        background: rgba(8, 7, 9, .48);
+        background: color-mix(in srgb, var(--gilas-ink), transparent 48%);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         box-shadow: 0 20px 70px rgba(0,0,0,.28);
@@ -417,9 +434,9 @@
     .honey-detail button {
         width: 100%;
         min-height: 44px;
-        border: 1px solid rgba(255,255,255,.14);
+        border: 1px solid color-mix(in srgb, var(--gilas-cream), transparent 86%);
         border-radius: 14px;
-        background: rgba(255,255,255,.07);
+        background: var(--surface-3);
         color: currentColor;
         cursor: pointer;
         font-size: 12px;
