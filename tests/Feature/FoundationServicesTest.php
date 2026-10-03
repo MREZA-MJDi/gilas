@@ -73,6 +73,44 @@ class FoundationServicesTest extends TestCase
         $this->assertCount(1, $order->statusHistory);
     }
 
+    public function test_order_service_includes_option_price_in_line_total(): void
+    {
+        $restaurant = Restaurant::create(['name' => 'Gilas', 'slug' => 'gilas-option-price']);
+        
+        $order = app(OrderService::class)->create($restaurant, [
+            'order_type' => OrderType::Pickup,
+            'items' => [
+                [
+                    'name' => 'قهوه',
+                    'unit_price' => 100000,
+                    'quantity' => 2,
+                    'options' => [
+                        ['option_name' => 'شیر', 'value_name' => 'بادام', 'price_delta' => 25000],
+                    ],
+                ],
+            ],
+        ]);
+
+        $item = $order->items->first();
+
+        $this->assertSame(125000, $item->unit_price);
+        $this->assertSame(250000, $item->total_price);
+        $this->assertSame(250000, $order->subtotal);
+        $this->assertSame(250000, $order->total);
+    }
+
+    public function test_order_service_requires_the_right_context_for_order_type(): void
+    {
+        $restaurant = Restaurant::create(['name' => 'Gilas', 'slug' => 'gilas-context-test']);
+
+        $this->expectException(ValidationException::class);
+
+        app(OrderService::class)->create($restaurant, [
+            'order_type' => OrderType::Delivery,
+            'items' => [['name' => 'قهوه', 'unit_price' => 100000, 'quantity' => 1]],
+        ]);
+    }
+
     public function test_order_service_rejects_invalid_transition_without_changing_order(): void
     {
         $restaurant = Restaurant::create(['name' => 'Gilas', 'slug' => 'gilas-transition-test']);
