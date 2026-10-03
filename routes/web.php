@@ -16,6 +16,10 @@ Route::post('/table/{token}/orders', [TableOrderingController::class, 'storeOrde
     ->where('token', '[A-Za-z0-9]+')
     ->name('table.orders.store');
 
+Route::get('/orders/{publicToken}', [OrderTrackingController::class, 'show'])
+    ->where('publicToken', '[A-Za-z0-9]+')
+    ->name('customer.orders.show');
+
 Route::get('/orders/{publicToken}/status', [OrderTrackingController::class, 'status'])
     ->where('publicToken', '[A-Za-z0-9]+')
     ->name('customer.orders.status');
