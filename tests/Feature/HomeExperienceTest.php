@@ -29,13 +29,13 @@ class HomeExperienceTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('GILAS')
             ->assertSee(route('menu.index'), false)
             ->assertSee(route('public.reservation'), false)
             ->assertSee(route('public.experience'), false)
             ->assertSee(route('public.location'), false)
             ->assertSee(route('public.story'), false);
 
+        $response->assertDontSee('GILAS');
         $response->assertDontSee('Today at');
         $response->assertDontSee('چیزهایی که امروز');
         $response->assertDontSee('انتخاب‌های امروز');
