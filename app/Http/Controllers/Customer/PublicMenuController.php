@@ -34,14 +34,25 @@ class PublicMenuController extends Controller
 
         if ($selectedSlug !== null && $selectedSlug !== '') {
             abort_unless($menu->contains(fn ($category) => $category->slug === $selectedSlug), 404);
+
             $menu = $menu
                 ->filter(fn ($category) => $category->slug === $selectedSlug)
                 ->values();
         }
 
+        $sourceMenu = $this->catalog->forRestaurant($restaurant)->values();
+
+        $featuredItems = $sourceMenu
+            ->flatMap(fn ($category) => $category->items->map(
+                fn ($item) => ['item' => $item, 'category' => $category]
+            ))
+            ->take(4)
+            ->values();
+
         return view('customer.menu', [
             'restaurant' => $restaurant,
             'menu' => $menu,
+            'featuredItems' => $featuredItems,
             'selectedSlug' => $selectedSlug,
         ]);
     }
@@ -56,6 +67,7 @@ class PublicMenuController extends Controller
 
         if (is_string($configuredSlug) && trim($configuredSlug) !== '') {
             $restaurant = (clone $query)->where('slug', trim($configuredSlug))->first();
+
             if ($restaurant) {
                 return $restaurant;
             }
