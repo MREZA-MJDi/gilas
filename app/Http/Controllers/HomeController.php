@@ -30,7 +30,9 @@ class HomeController extends Controller
         $categories = $menu->values();
 
         $featuredItems = $categories
-            ->flatMap(fn ($category) => $category->items)
+            ->flatMap(fn ($category) => $category->items->map(
+                fn ($item) => ['item' => $item, 'category' => $category]
+            ))
             ->take(6)
             ->values();
 
