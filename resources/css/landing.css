@@ -2,10 +2,16 @@
 
 @layer components {
     .gilas-landing{
-        --icon-filter:saturate(1.15) brightness(.88);
+        --gilas-cherry:#d8879e;
+        --gilas-pink:#cf7897;
+        --gilas-plum:#322338;
+        --gilas-ink:#141117;
+        --gilas-cream:#f4ece4;
+        --icon-filter:saturate(1.02) brightness(.9);
         --ripple-filter:blur(.9rem);
-        --hover-filter:brightness(1.14);
+        --hover-filter:brightness(1.1);
         --hexagon-size:clamp(42px,8vmin,92px);
+        --bg:linear-gradient(155deg,#322338 0%,#201923 58%,#141117 100%);
     }
 
     .gilas-landing.vision-ui{
@@ -26,8 +32,8 @@
         overflow:hidden;
         color:var(--color-on-surface);
         background:
-            radial-gradient(circle at 48% 48%,color-mix(in srgb,var(--gilas-cherry),transparent 92%),transparent 26%),
-            radial-gradient(circle at 82% 18%,color-mix(in srgb,var(--gilas-cyan),transparent 94%),transparent 24%),
+            radial-gradient(circle at 48% 48%,color-mix(in srgb,var(--gilas-cherry),transparent 95%),transparent 30%),
+            radial-gradient(circle at 82% 18%,color-mix(in srgb,var(--gilas-cyan),transparent 96%),transparent 26%),
             var(--bg);
     }
 
@@ -38,8 +44,8 @@
         z-index:-1;
         pointer-events:none;
         background:
-            radial-gradient(circle at 50% 58%,transparent 54%,rgba(0,0,0,.58) 100%),
-            linear-gradient(to top,rgba(0,0,0,.42) 62%,transparent),
+            radial-gradient(circle at 50% 58%,transparent 54%,rgba(0,0,0,.38) 100%),
+            linear-gradient(to top,rgba(0,0,0,.26) 62%,transparent),
             url("https://assets.codepen.io/907471/vision-pro-palm.jpg") 45% center/cover no-repeat;
         opacity:1;
         filter:blur(.5rem);
@@ -153,7 +159,7 @@
     .hexagon:hover,.vision-switch:hover{filter:var(--hover-filter)}
 
     .hexagon.is-active{
-        filter:brightness(1.45) drop-shadow(0 0 18px color-mix(in srgb,var(--color-primary),transparent 40%));
+        filter:brightness(1.28) drop-shadow(0 0 16px color-mix(in srgb,var(--color-primary),transparent 52%));
         transform:scale(1.05);
     }
 
