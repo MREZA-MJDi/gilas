@@ -9,6 +9,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="gilas-landing">
+    @include('components.footsteps')
     <main class="landing-stage" aria-label="خانه گیلاسی">
         <div class="landing-copy">
             <span class="landing-kicker">خانه گیلاسی</span>
