@@ -9,6 +9,19 @@ use Illuminate\Http\JsonResponse;
 
 class OrderTrackingController extends Controller
 {
+    public function show(string $publicToken)
+    {
+        $order = Order::query()
+            ->where('public_token', $publicToken)
+            ->with(['restaurant:id,name,currency', 'table:id,number'])
+            ->firstOrFail();
+
+        return view('customer.order-waiting', [
+            'order' => $order,
+            'statusUrl' => route('customer.orders.status', $order->public_token),
+        ]);
+    }
+
     public function status(string $publicToken): JsonResponse
     {
         $order = Order::query()
