@@ -5,7 +5,7 @@
 
 @section('content')
 <main class="ui-shell public-page-shell">
-    <a href="{{ route('home') }}" class="public-page-back">← خانه گیلاسی</a>
+    <a href="{{ route('home') }}" class="public-page-back">← گیلاس</a>
 
     <section class="public-page-card">
         <div class="public-page-card__glow"></div>
