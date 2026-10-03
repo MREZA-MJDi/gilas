@@ -13,14 +13,17 @@ class Order extends Model
 {
     protected $fillable = [
         'restaurant_id','customer_id','restaurant_table_id','customer_address_id',
-        'order_number','order_type','status','subtotal','discount','tax','delivery_fee',
-        'service_charge','total','customer_note','confirmed_at','completed_at','cancelled_at',
+        'order_number','idempotency_key','idempotency_hash','order_type','status',
+        'subtotal','discount','tax','delivery_fee','service_charge','total',
+        'customer_note','confirmed_at','completed_at','cancelled_at',
     ];
 
     protected function casts(): array
     {
         return [
             'order_type'=>OrderType::class,'status'=>OrderStatus::class,
+            'subtotal'=>'integer','discount'=>'integer','tax'=>'integer',
+            'delivery_fee'=>'integer','service_charge'=>'integer','total'=>'integer',
             'confirmed_at'=>'datetime','completed_at'=>'datetime','cancelled_at'=>'datetime',
         ];
     }
