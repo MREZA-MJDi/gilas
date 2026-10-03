@@ -7,7 +7,7 @@
 <div class="public-menu-shell">
     <header class="public-menu-header">
         <div class="ui-shell public-menu-header__inner">
-            <a href="{{ route('home') }}" class="brand-lockup" aria-label="بازگشت به خانه گیلاسی">
+            <a href="{{ route('home') }}" class="brand-lockup" aria-label="بازگشت به گیلاس">
                 <span class="brand-lockup__mark">
                     @if($restaurant->logo_path)
                         <img src="{{ \Illuminate\Support\Facades\Storage::url($restaurant->logo_path) }}" alt="" width="44" height="44">
@@ -17,7 +17,7 @@
                 </span>
                 <span>
                     <strong>{{ $restaurant->name }}</strong>
-                    <small>منوی خانه</small>
+                    <small>منوی گیلاس</small>
                 </span>
             </a>
             <a href="{{ route('home') }}" class="public-menu-header__back">خانه</a>
@@ -29,7 +29,7 @@
             <div>
                 <span class="eyebrow">منوی واقعی</span>
                 <h1>انتخابت را آرام،<br><strong>خوش‌طعم</strong> شروع کن.</h1>
-                <p>{{ $restaurant->description ?: 'هر چیزی که امروز در خانه گیلاسی سرو می‌شود، همین‌جا با قیمت و موجودی واقعی دیده می‌شود.' }}</p>
+                <p>{{ $restaurant->description ?: 'هر چیزی که امروز در گیلاس سرو می‌شود، همین‌جا با قیمت و موجودی واقعی دیده می‌شود.' }}</p>
             </div>
             @if($restaurant->cover_image_path)
                 <div class="public-menu__hero-media">
