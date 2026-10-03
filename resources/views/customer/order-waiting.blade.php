@@ -1,7 +1,7 @@
 @extends('layouts.customer')
 
 @section('title', 'در انتظار آماده‌شدن سفارش — ' . $order->order_number)
-@section('description', 'پیگیری سفارش ' . $order->order_number . ' در خانه گیلاسی')
+@section('description', 'پیگیری سفارش ' . $order->order_number . ' در گیلاس')
 
 @section('content')
 <div id="order-waiting"
