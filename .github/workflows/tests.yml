@@ -36,5 +36,16 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install frontend dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build frontend assets
+        run: npm run build
+
       - name: Run test suite
         run: php artisan test
