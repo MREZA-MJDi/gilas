@@ -119,6 +119,7 @@ class OrderService
                     'customer_address_id' => $data['customer_address_id'] ?? null,
                     'order_number' => $this->generateOrderNumber(),
                     'idempotency_key' => $idempotencyKey,
+                    'public_token' => $this->generatePublicTrackingToken(),
                     'idempotency_hash' => $requestHash,
                     'order_type' => $type,
                     'status' => OrderStatus::Pending,
@@ -510,6 +511,15 @@ class OrderService
         $basisPoints = ((int) $whole * 100) + (int) str_pad($fraction, 2, '0');
 
         return intdiv(($amount * $basisPoints) + 5000, 10000);
+    }
+
+    private function generatePublicTrackingToken(): string
+    {
+        do {
+            $token = Str::lower(Str::random(48));
+        } while (Order::query()->where('public_token', $token)->exists());
+
+        return $token;
     }
 
     private function generateOrderNumber(): string
