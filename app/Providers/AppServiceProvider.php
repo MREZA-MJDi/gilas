@@ -2,21 +2,20 @@
 
 namespace App\Providers;
 
+use App\Services\ImageService;
+use App\Services\OrderService;
+use App\Services\RestaurantService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->scoped(ImageService::class);
+        $this->app->scoped(OrderService::class);
+        $this->app->scoped(RestaurantService::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         //
