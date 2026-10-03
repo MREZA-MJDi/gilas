@@ -1,0 +1,322 @@
+@import './app.css';
+
+@layer components {
+    :root {
+        --icon-filter: saturate(1.15) brightness(0.88);
+        --ripple-filter: blur(0.9rem);
+        --hover-filter: brightness(1.14);
+        --hexagon-size: clamp(42px, 8vmin, 92px);
+    }
+
+    .gilas-landing.vision-ui {
+        --color-surface-container: rgba(255, 255, 255, .35);
+        --color-on-surface: #fff;
+        --icon-filter: saturate(.4);
+        --ripple-filter: blur(.2rem);
+        --hover-filter: brightness(1.5);
+    }
+
+    .landing-stage {
+        position: relative;
+        isolation: isolate;
+        min-height: 100svh;
+        min-width: 100%;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        color: var(--color-on-surface);
+        background:
+            radial-gradient(circle at 48% 48%, color-mix(in srgb, var(--gilas-cherry), transparent 92%), transparent 26%),
+            radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--gilas-cyan), transparent 94%), transparent 24%),
+            var(--bg);
+    }
+
+    .landing-stage::before {
+        content: "";
+        position: absolute;
+        inset: -2%;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            radial-gradient(circle at 50% 58%, transparent 54%, rgba(0,0,0,.58) 100%),
+            linear-gradient(to top, rgba(0,0,0,.42) 62%, transparent),
+            url("https://assets.codepen.io/907471/vision-pro-palm.jpg") 45% center / cover no-repeat;
+        opacity: 1;
+        filter: blur(.5rem);
+        transform: scale(1.03);
+        transition: filter .6s ease, transform .6s ease;
+    }
+
+    .gilas-landing.vision-ui .landing-stage::before {
+        filter: blur(0);
+        transform: scale(1);
+    }
+
+    .landing-stage::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            repeating-linear-gradient(90deg, transparent 0 79px, rgba(255,255,255,.012) 80px),
+            repeating-linear-gradient(0deg, transparent 0 79px, rgba(255,255,255,.008) 80px);
+        mask-image: radial-gradient(circle at center, black 15%, transparent 78%);
+    }
+
+    .landing-copy {
+        position: absolute;
+        top: clamp(28px, 5vw, 72px);
+        right: clamp(24px, 6vw, 96px);
+        z-index: 5;
+        width: min(380px, 42vw);
+        text-align: right;
+        pointer-events: none;
+    }
+
+    .landing-kicker {
+        display: inline-flex;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .08em;
+        opacity: .82;
+    }
+
+    .landing-copy h1 {
+        margin: 18px 0 0;
+        font-size: clamp(32px, 4vw, 62px);
+        line-height: 1.05;
+        letter-spacing: -.05em;
+        font-weight: 500;
+    }
+
+    .landing-copy h1 strong { font-weight: 700; }
+
+    .landing-copy p {
+        max-width: 330px;
+        margin: 16px 0 0;
+        font-size: 14px;
+        line-height: 2;
+        opacity: .68;
+    }
+
+    .honeycomb {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: min(68vw, 850px);
+        max-width: calc(100vw - 40px);
+        margin-inline: auto;
+        transform-origin: center;
+        user-select: none;
+    }
+
+    .honeycomb__column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 -.2vmin;
+    }
+
+    .hexagon, .vision-switch {
+        --mix-percentage: calc(var(--column, 0) * var(--index, 0) * 3%);
+        width: var(--hexagon-size);
+        aspect-ratio: 1;
+        position: relative;
+        border: 0;
+        padding: 0;
+        color: inherit;
+        cursor: pointer;
+        background: var(--color-surface-container, color-mix(in srgb, var(--color-secondary), var(--color-primary) var(--mix-percentage)));
+        backdrop-filter: blur(1rem);
+        -webkit-backdrop-filter: blur(1rem);
+        clip-path: polygon(
+            98.66024% 45%, 99.39693% 46.5798%, 99.84808% 48.26352%, 100% 50%,
+            99.84808% 51.73648%, 99.39693% 53.4202%, 98.66025% 55%,
+            78.66025% 89.64102%, 77.66044% 91.06889%, 76.42788% 92.30146%,
+            75% 93.30127%, 73.4202% 94.03794%, 71.73648% 94.48909%, 70% 94.64102%,
+            30% 94.64102%, 28.26352% 94.48909%, 26.5798% 94.03794%, 25% 93.30127%,
+            23.57212% 92.30146%, 22.33956% 91.06889%, 21.33975% 89.64102%,
+            1.33975% 55%, .60307% 53.4202%, .15192% 51.73648%, 0 50%,
+            .15192% 48.26352%, .60307% 46.5798%, 1.33975% 45%,
+            21.33975% 10.35898%, 22.33956% 8.93111%, 23.57212% 7.69854%,
+            25% 6.69873%, 26.5798% 5.96206%, 28.26352% 5.51091%, 30% 5.35898%,
+            70% 5.35898%, 71.73648% 5.51091%, 73.4202% 5.96206%, 75% 6.69873%,
+            76.42788% 7.69854%, 77.66044% 8.93111%, 78.66025% 10.35898%
+        );
+        transition: filter .2s ease, transform .3s ease;
+        will-change: transform;
+    }
+
+    .hexagon::after {
+        content: var(--icon);
+        display: grid;
+        place-items: center;
+        position: absolute;
+        inset: 0;
+        filter: var(--icon-filter);
+        font-size: clamp(17px, 2.5vmin, 28px);
+    }
+
+    .hexagon:hover, .vision-switch:hover { filter: var(--hover-filter); }
+    .hexagon.is-active {
+        filter: brightness(1.45) drop-shadow(0 0 18px color-mix(in srgb, var(--color-primary), transparent 40%));
+        transform: scale(1.05);
+    }
+
+    @keyframes honey-ripple {
+        from { transform: scale(1); opacity: 1; }
+        50% { transform: scale(max(.8, calc(var(--ripple-factor) / 100))); opacity: .42; }
+        65% { opacity: 1; }
+        70% { transform: scale(1.5); filter: var(--ripple-filter); }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .honeycomb.show-ripple { pointer-events: none; }
+    .honeycomb.show-ripple .hexagon {
+        cursor: default;
+        --duration: .45s;
+        animation: honey-ripple var(--duration) ease-in-out;
+        animation-duration: max(var(--duration), calc(var(--duration) * var(--ripple-factor) / 100));
+        animation-delay: calc(var(--ripple-factor) * 8ms);
+    }
+
+    .vision-switch {
+        position: absolute;
+        top: clamp(18px, 4vmin, 48px);
+        right: clamp(18px, 4vmin, 48px);
+        z-index: 10;
+        width: clamp(70px, 8vmin, 92px);
+        height: clamp(38px, 4vmin, 52px);
+        display: block;
+    }
+
+    .vision-switch::after {
+        content: "👾";
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 70%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        background: var(--color-surface-container, color-mix(in srgb, var(--color-secondary), var(--color-primary) 36%));
+        filter: var(--icon-filter);
+        clip-path: inherit;
+        transition: transform .3s ease;
+    }
+
+    .vision-switch.is-checked::after {
+        content: "🕶️";
+        transform: translateX(30%);
+    }
+
+    .landing-mark {
+        position: absolute;
+        left: clamp(24px, 4vw, 64px);
+        bottom: clamp(18px, 3vw, 44px);
+        z-index: 5;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .6em;
+        opacity: .55;
+    }
+
+    .honey-detail {
+        position: absolute;
+        left: clamp(22px, 5vw, 78px);
+        bottom: clamp(30px, 8vh, 90px);
+        z-index: 7;
+        width: min(340px, 34vw);
+        padding: 20px 22px;
+        border: 1px solid var(--line-soft);
+        border-radius: 24px;
+        background: color-mix(in srgb, var(--gilas-ink), transparent 48%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 20px 70px rgba(0,0,0,.28);
+        opacity: .78;
+        transform: translateY(14px);
+        transition: opacity .35s ease, transform .45s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .honey-detail.is-visible { opacity: 1; transform: translateY(0); }
+
+    .honey-detail__eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        opacity: .48;
+    }
+
+    .honey-detail h2 {
+        margin: 0;
+        font-size: clamp(21px, 2vw, 32px);
+        line-height: 1.12;
+        letter-spacing: -.04em;
+    }
+
+    .honey-detail p {
+        margin: 9px 0 16px;
+        font-size: 12px;
+        line-height: 1.9;
+        opacity: .68;
+    }
+
+    .honey-detail button {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid color-mix(in srgb, var(--gilas-cream), transparent 86%);
+        border-radius: 14px;
+        background: var(--surface-3);
+        color: currentColor;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .honey-detail button:hover { background: rgba(255,255,255,.13); transform: translateY(-1px); }
+
+    .vision-switch:focus-visible, .hexagon:focus-visible, .honey-detail button:focus-visible {
+        outline: 2px solid rgba(255,255,255,.85);
+        outline-offset: 4px;
+    }
+
+    @media (max-width: 800px) {
+        .landing-copy { top: 22px; right: 20px; width: min(68vw, 360px); }
+        .landing-copy h1 { font-size: clamp(29px, 9vw, 44px); }
+        .landing-copy p { font-size: 12px; line-height: 1.9; }
+        .honeycomb { width: 96vw; max-width: none; transform: translateY(2vh) scale(.88); }
+        .hexagon { --hexagon-size: clamp(35px, 10vmin, 70px); }
+        .landing-mark { letter-spacing: .38em; }
+        .honey-detail { left: 16px; right: 16px; bottom: 18px; width: auto; padding: 15px 16px; border-radius: 20px; }
+        .honey-detail p { margin-bottom: 11px; line-height: 1.75; }
+    }
+
+    @media (max-width: 480px) {
+        .honeycomb { transform: translateY(1vh) scale(.66); }
+        .landing-copy { width: 72vw; }
+        .landing-copy h1 { font-size: clamp(27px, 9vw, 38px); }
+        .landing-copy p { max-width: 285px; font-size: 11px; }
+        .honey-detail { bottom: 12px; }
+        .honey-detail h2 { font-size: 20px; }
+        .honey-detail p { font-size: 11px; }
+    }
+
+    @media (hover: none) {
+        .hexagon:hover, .vision-switch:hover, .honey-detail button:hover { filter: none; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hexagon, .vision-switch, .landing-stage::before { transition: none; }
+        .honeycomb.show-ripple .hexagon { animation: none; }
+    }
+}
