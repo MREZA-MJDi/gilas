@@ -14,32 +14,45 @@ function initHoneycomb() {
     const action = detail?.querySelector('[data-honey-action]');
     if (!hexagons.length) return;
 
-    const modes = [
-        ['منوی خانه', 'از قهوه‌ی صبح تا دسرهای آخر شب؛ مسیرت را با منو شروع کن.', 'مشاهده مسیر'],
-        ['قهوه', 'عطر تازه، ریتم آرام و یک گوشه برای ماندن.', 'قهوه انتخاب کن'],
-        ['دسر', 'چیزی شیرین برای پایان یک تجربه‌ی خوب.', 'دسرها'],
-        ['فضای خانه', 'جایی برای مکث، گفت‌وگو و ساختن خاطره.', 'کشف فضا'],
-        ['تجربه امروز', 'هر بار که برمی‌گردی، یک جزئیات تازه پیدا می‌کنی.', 'ادامه تجربه'],
-        ['رزرو', 'برای میز بعدی‌ات از همینجا آماده شو.', 'رزرو میز'],
-        ['درباره ما', 'خانه گیلاسی را از نگاه خودش بشناس.', 'داستان ما'],
-        ['مسیریابی', 'راه رسیدن به یک توقف خوش‌مزه کوتاه است.', 'پیدا کردن ما'],
-        ['باشگاه گیلاس', 'عضوی از جمعی باش که هر بار یک مزه‌ی تازه کشف می‌کند.', 'عضویت'],
-    ];
+    let items = [];
+    try {
+        items = JSON.parse(container.dataset.honeycomb || '[]');
+    } catch {
+        items = [];
+    }
 
+    const fallback = {
+        title: 'گیلاس',
+        text: 'مسیرت را از همین‌جا شروع کن.',
+        cta: 'ورود به منو',
+        url: '/menu',
+        icon: '🍒',
+    };
+
+    let activeIndex = 0;
     let rippleRunning = false;
 
+    const getItem = index => items[index % Math.max(items.length, 1)] || fallback;
+
     const activate = (index) => {
+        activeIndex = index;
+
         hexagons.forEach((hex, i) => {
             const active = i === index;
             hex.classList.toggle('is-active', active);
             hex.setAttribute('aria-current', active ? 'true' : 'false');
         });
 
+        const item = getItem(index);
         if (!detail || !title || !text || !action) return;
-        const [heading, copy, cta] = modes[index % modes.length];
-        title.textContent = heading;
-        text.textContent = copy;
-        action.textContent = cta;
+
+        title.textContent = item.title;
+        text.textContent = item.text;
+        action.textContent = item.cta;
+        if (action instanceof HTMLAnchorElement) {
+            action.href = item.url || fallback.url;
+        }
+
         detail.classList.remove('is-visible');
         requestAnimationFrame(() => detail.classList.add('is-visible'));
     };
@@ -49,10 +62,15 @@ function initHoneycomb() {
         rippleRunning = true;
 
         const targetRect = target.getBoundingClientRect();
-        const ordered = hexagons.map(element => {
-            const rect = element.getBoundingClientRect();
-            return { element, distance: Math.hypot(rect.x - targetRect.x, rect.y - targetRect.y) };
-        }).sort((a, b) => a.distance - b.distance);
+        const ordered = hexagons
+            .map(element => {
+                const rect = element.getBoundingClientRect();
+                return {
+                    element,
+                    distance: Math.hypot(rect.x - targetRect.x, rect.y - targetRect.y),
+                };
+            })
+            .sort((a, b) => a.distance - b.distance);
 
         const maxDistance = ordered.at(-1)?.distance || 1;
         ordered.forEach(({ element, distance }) => {
@@ -62,7 +80,11 @@ function initHoneycomb() {
         container.classList.add('show-ripple');
 
         const last = ordered.at(-1)?.element;
-        if (!last) return;
+        if (!last) {
+            rippleRunning = false;
+            container.classList.remove('show-ripple');
+            return;
+        }
 
         last.addEventListener('animationend', () => {
             container.classList.remove('show-ripple');
@@ -76,6 +98,8 @@ function initHoneycomb() {
             activate(index);
             ripple(hexagon);
         });
+        hexagon.addEventListener('mouseenter', () => activate(index));
+        hexagon.addEventListener('focus', () => activate(index));
     });
 
     switchButton?.addEventListener('click', () => {
@@ -85,8 +109,9 @@ function initHoneycomb() {
         switchButton.setAttribute('aria-pressed', String(checked));
     });
 
-    activate(0);
-    if (!reduceMotion) {
+    activate(activeIndex);
+
+    if (!reduceMotion && hexagons[0]) {
         setTimeout(() => ripple(hexagons[0]), 500);
     }
 }
