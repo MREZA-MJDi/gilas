@@ -4,9 +4,9 @@ namespace App\Services;
 
 use App\Models\RestaurantTable;
 use App\Models\TableQrCode;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 class TableQrCodeService
 {
@@ -70,9 +70,7 @@ class TableQrCodeService
         $qr = $this->resolve($token);
 
         if (!$qr) {
-            throw ValidationException::withMessages([
-                'token' => 'This table QR code is invalid or inactive.',
-            ]);
+            throw (new ModelNotFoundException)->setModel(TableQrCode::class, [$token]);
         }
 
         return $qr;
