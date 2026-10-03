@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0b090d">
     <meta name="description" content="{{ $restaurant?->description ?: 'گیلاس — یک تجربه خوش‌طعم و متفاوت.' }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <title>{{ $restaurant?->name ?: 'گیلاس' }}</title>
     @unless(app()->environment('testing'))
         @vite(['resources/css/landing.css', 'resources/js/landing.js'])
@@ -70,7 +71,7 @@
                 <span aria-hidden="true"></span>
             </button>
 
-            <div class="landing-mark">G I L A S</div>
+            <div class="landing-mark" aria-hidden="true">G I L A S</div>
         </section>
 
         <section class="landing-section landing-section--featured" aria-labelledby="featured-title">
