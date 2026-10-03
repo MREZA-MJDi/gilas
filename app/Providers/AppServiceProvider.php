@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\ImageService;
+use App\Services\MenuCatalogService;
 use App\Services\MenuPricingService;
 use App\Services\OrderService;
 use App\Services\RestaurantService;
@@ -14,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(ImageService::class);
+        $this->app->scoped(MenuCatalogService::class);
         $this->app->scoped(MenuPricingService::class);
         $this->app->scoped(OrderService::class);
         $this->app->scoped(RestaurantService::class);
