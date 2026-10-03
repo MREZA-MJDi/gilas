@@ -367,7 +367,11 @@ class OrderService
             return $restaurant->settings;
         }
 
-        return $restaurant->settings()->create([
+        $lockedRestaurant = Restaurant::query()
+            ->lockForUpdate()
+            ->findOrFail($restaurant->id);
+
+        return $lockedRestaurant->settings()->firstOrCreate([], [
             'ordering_enabled' => true,
             'dine_in_enabled' => true,
             'pickup_enabled' => true,
@@ -420,7 +424,7 @@ class OrderService
 
             return [
                 'menu_item_id' => (int) ($item['menu_item_id'] ?? 0),
-                'menu_item_variant_id' => $item['menu_item_variant_id'] !== null
+                'menu_item_variant_id' => ($item['menu_item_variant_id'] ?? null) !== null
                     ? (int) $item['menu_item_variant_id']
                     : null,
                 'quantity' => (int) ($item['quantity'] ?? 0),
@@ -481,19 +485,17 @@ class OrderService
 
     private function positiveInteger(mixed $value, string $field): int
     {
-        $valid = is_int($value)
-            ? $value >= 1
-            : is_string($value) && preg_match('/^[1-9]\d*$/', $value);
+        $number = filter_var($value, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
 
-        $number = (int) $value;
-
-        if (!$valid || $number < 1) {
+        if ($number === false) {
             throw ValidationException::withMessages([
                 $field => 'The value must be a positive integer.',
             ]);
         }
 
-        return $number;
+        return (int) $number;
     }
 
     private function percentageAmount(int $amount, mixed $percent): int
