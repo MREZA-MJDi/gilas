@@ -16,7 +16,6 @@
 
     <main class="landing-stage" aria-label="{{ $restaurant?->name ?: 'گیلاس' }}">
         <div class="landing-copy">
-            <span class="landing-kicker">GILAS</span>
             <h1>یک تجربه<br><strong>خوش‌طعم و متفاوت</strong></h1>
             <p>{{ $restaurant?->description ?: 'منو، فضا و حال‌وهوای گیلاس؛ همه‌چیز از یک لمس شروع می‌شود.' }}</p>
         </div>
@@ -69,7 +68,6 @@
             <span aria-hidden="true"></span>
         </button>
 
-        <div class="landing-mark" aria-hidden="true">G I L A S</div>
     </main>
 </body>
 </html>
