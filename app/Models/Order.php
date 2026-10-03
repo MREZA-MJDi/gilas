@@ -13,7 +13,7 @@ class Order extends Model
 {
     protected $fillable = [
         'restaurant_id','customer_id','restaurant_table_id','customer_address_id',
-        'order_number','idempotency_key','idempotency_hash','order_type','status',
+        'order_number','idempotency_key','idempotency_hash','public_token','order_type','status',
         'subtotal','discount','tax','delivery_fee','service_charge','total',
         'customer_note','confirmed_at','completed_at','cancelled_at',
     ];
