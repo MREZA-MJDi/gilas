@@ -1,5 +1,3 @@
-import { gsap } from 'gsap';
-
 const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
 function initHoneycomb() {
@@ -95,8 +93,16 @@ function initHoneycomb() {
 
     hexagons.forEach((hexagon, index) => {
         hexagon.addEventListener('click', () => {
+            const item = getItem(index);
+
             activate(index);
             ripple(hexagon);
+
+            if (item.url) {
+                window.setTimeout(() => {
+                    window.location.assign(item.url);
+                }, reduceMotion ? 0 : 180);
+            }
         });
         hexagon.addEventListener('mouseenter', () => activate(index));
         hexagon.addEventListener('focus', () => activate(index));
