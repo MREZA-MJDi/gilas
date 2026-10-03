@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -28,4 +29,16 @@ class Restaurant extends Model
     public function reservations(): HasMany { return $this->hasMany(Reservation::class); }
     public function couriers(): HasMany { return $this->hasMany(Courier::class); }
     public function deliveryZones(): HasMany { return $this->hasMany(DeliveryZone::class); }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot(['role', 'is_active'])
+            ->withTimestamps();
+    }
+
+    public function activeUsers(): BelongsToMany
+    {
+        return $this->users()->wherePivot('is_active', true);
+    }
 }
