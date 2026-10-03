@@ -153,6 +153,15 @@
                                                     @if($item->description)
                                                         <p class="mt-1 line-clamp-2 text-sm leading-6 text-stone-400">{{ $item->description }}</p>
                                                     @endif
+                                                    @if($item->options->isNotEmpty())
+                                                        <span class="sr-only" aria-label="گزینه‌های قابل انتخاب">
+                                                            @foreach($item->options as $option)
+                                                                @foreach($option->values as $value)
+                                                                    {{ $value->name }}
+                                                                @endforeach
+                                                            @endforeach
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <span class="shrink-0 rounded-xl bg-white/5 px-2.5 py-2 text-sm font-semibold text-rose-100">{{ number_format((int) $item->price) }}</span>
                                             </div>
