@@ -21,7 +21,6 @@ class StoreTableOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['nullable', 'integer', 'min:1'],
             'customer_note' => ['nullable', 'string', 'max:2000'],
             'items' => ['required', 'array', 'min:1', 'max:100'],
             'items.*' => ['required', 'array'],
