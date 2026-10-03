@@ -100,11 +100,6 @@
 
     <canvas class="grain" data-grain aria-hidden="true"></canvas>
 
-    <script src="https://unpkg.co/gsap@3/dist/gsap.min.js"></script>
-    <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
-    <script src="https://assets.codepen.io/16327/DrawSVGPlugin3.min.js"></script>
-    <script src="https://unpkg.com/gsap@3/dist/MotionPathPlugin.min.js"></script>
-    <script src="https://assets.codepen.io/16327/CustomEase3.min.js"></script>
-    <script src="{{ asset('js/gilas-coming.js') }}"></script>
+                        @vite('resources/js/gilas-coming.js')
 </body>
 </html>
