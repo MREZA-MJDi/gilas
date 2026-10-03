@@ -343,8 +343,43 @@
     function loadCart() {
         try {
             const data = JSON.parse(localStorage.getItem(cartKey) || '[]');
-            return Array.isArray(data) ? data.filter(line => line?.menu_item_id && Number(line.quantity) > 0) : [];
-        } catch (_) { return []; }
+            if (!Array.isArray(data)) return [];
+
+            return data.map(line => {
+                const item = items.get(String(line?.menu_item_id));
+                if (!item) return null;
+
+                const variantId = line.menu_item_variant_id
+                    ? Number(line.menu_item_variant_id)
+                    : null;
+                if (variantId && !item.variants.some(variant => Number(variant.id) === variantId)) return null;
+
+                const optionIds = [...new Set(Array.isArray(line.option_value_ids) ? line.option_value_ids.map(Number) : [])]
+                    .filter(id => item.options.some(option => option.values.some(value => Number(value.id) === id)));
+                if (validateOptions(item, optionIds).length) return null;
+
+                const quantity = Math.min(1000, Math.max(1, Number(line.quantity) || 1));
+                const note = typeof line.note === 'string' ? line.note.slice(0, 300) : '';
+                const unitPrice = resolvePrice(item, variantId, optionIds);
+                const variantName = variantId
+                    ? (item.variants.find(variant => Number(variant.id) === variantId)?.name || null)
+                    : null;
+
+                return {
+                    signature: makeSignature(item.id, variantId, optionIds, note),
+                    menu_item_id: item.id,
+                    menu_item_variant_id: variantId,
+                    option_value_ids: optionIds,
+                    quantity,
+                    note,
+                    name: item.name,
+                    variant_name: variantName,
+                    unit_price: unitPrice,
+                };
+            }).filter(Boolean);
+        } catch (_) {
+            return [];
+        }
     }
 
     let toastTimer;
