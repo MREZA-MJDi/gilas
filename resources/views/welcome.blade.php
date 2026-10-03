@@ -17,6 +17,13 @@
             <p>منو، فضا و حال‌وهوای خانه گیلاسی؛ همه‌چیز از یک لمس شروع می‌شود.</p>
         </div>
 
+        <div class="honey-detail" data-honey-detail>
+            <span class="honey-detail__eyebrow">انتخاب تو</span>
+            <h2 data-honey-title>منوی خانه</h2>
+            <p data-honey-text>از قهوه‌ی صبح تا دسرهای آخر شب؛ مسیرت را با منو شروع کن.</p>
+            <button type="button" data-honey-action>مشاهده مسیر</button>
+        </div>
+
         <div id="container" class="honeycomb" aria-label="شبکه تعاملی">
         @php
             $honeycomb = [5, 6, 7, 8, 9, 8, 7, 6, 5];
