@@ -292,3 +292,243 @@
         }
     }
 }
+
+@layer base {
+    html, body {
+        width: 100%;
+        min-height: 100%;
+    }
+
+    body {
+        margin: 0;
+        overflow-x: hidden;
+        background: #120f0d;
+    }
+}
+
+@layer components {
+    .footsteps-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        opacity: 0.12;
+        color: var(--footsteps-color, #ee75d2);
+        mix-blend-mode: screen;
+        overflow: hidden;
+    }
+
+    .gilas-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .gilas-landing .footsteps-layer {
+        --footsteps-color: #ee75d2;
+        opacity: 0.2;
+    }
+
+    .landing-stage {
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 48% 48%, rgba(238,117,210,.08), transparent 26%),
+            radial-gradient(circle at 82% 18%, rgba(117,216,238,.06), transparent 24%),
+            var(--bg);
+    }
+
+    .landing-stage::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            repeating-linear-gradient(90deg, transparent 0 79px, rgba(255,255,255,.012) 80px),
+            repeating-linear-gradient(0deg, transparent 0 79px, rgba(255,255,255,.008) 80px);
+        mask-image: radial-gradient(circle at center, black 15%, transparent 78%);
+    }
+
+    .honeycomb {
+        width: min(68vw, 850px);
+        max-width: calc(100vw - 40px);
+        transform-origin: center;
+        user-select: none;
+    }
+
+    .hexagon {
+        will-change: transform, filter;
+    }
+
+    .hexagon.is-active {
+        filter: brightness(1.45) drop-shadow(0 0 18px color-mix(in srgb, var(--color-primary), transparent 40%));
+        transform: scale(1.05);
+    }
+
+    .honey-detail {
+        position: absolute;
+        left: clamp(22px, 5vw, 78px);
+        bottom: clamp(30px, 8vh, 90px);
+        z-index: 7;
+        width: min(340px, 34vw);
+        padding: 20px 22px;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 24px;
+        background: rgba(8, 7, 9, .48);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 20px 70px rgba(0,0,0,.28);
+        opacity: .78;
+        transform: translateY(14px);
+        transition: opacity .35s ease, transform .45s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .honey-detail.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .honey-detail__eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        opacity: .48;
+    }
+
+    .honey-detail h2 {
+        margin: 0;
+        font-size: clamp(21px, 2vw, 32px);
+        line-height: 1.12;
+        letter-spacing: -.04em;
+    }
+
+    .honey-detail p {
+        margin: 9px 0 16px;
+        font-size: 12px;
+        line-height: 1.9;
+        opacity: .68;
+    }
+
+    .honey-detail button {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid rgba(255,255,255,.14);
+        border-radius: 14px;
+        background: rgba(255,255,255,.07);
+        color: currentColor;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .honey-detail button:hover {
+        background: rgba(255,255,255,.13);
+        transform: translateY(-1px);
+    }
+
+    .vision-switch:focus-visible,
+    .hexagon:focus-visible,
+    .honey-detail button:focus-visible {
+        outline: 2px solid rgba(255,255,255,.85);
+        outline-offset: 4px;
+    }
+
+    @media (max-width: 800px) {
+        .landing-stage {
+            min-height: 100svh;
+        }
+
+        .landing-copy {
+            top: 22px;
+            right: 20px;
+            width: min(68vw, 360px);
+        }
+
+        .honeycomb {
+            width: 96vw;
+            max-width: none;
+            transform: translateY(2vh) scale(.88);
+        }
+
+        .honey-detail {
+            left: 16px;
+            right: 16px;
+            bottom: 18px;
+            width: auto;
+            padding: 15px 16px;
+            border-radius: 20px;
+        }
+
+        .honey-detail p {
+            margin-bottom: 11px;
+            line-height: 1.75;
+        }
+
+        .vision-switch {
+            top: 18px;
+            right: 18px;
+        }
+
+        .gilas-landing .footsteps-layer {
+            opacity: .12;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .honeycomb {
+            transform: translateY(1vh) scale(.66);
+        }
+
+        .landing-copy {
+            width: 72vw;
+        }
+
+        .landing-copy h1 {
+            font-size: clamp(27px, 9vw, 38px);
+        }
+
+        .landing-copy p {
+            max-width: 285px;
+            font-size: 11px;
+        }
+
+        .honey-detail {
+            bottom: 12px;
+        }
+
+        .honey-detail h2 {
+            font-size: 20px;
+        }
+
+        .honey-detail p {
+            font-size: 11px;
+        }
+    }
+
+    @media (hover: none) {
+        .hexagon:hover,
+        .vision-switch:hover,
+        .honey-detail button:hover {
+            filter: none;
+            transform: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .footsteps-layer {
+            display: none;
+        }
+
+        .honey-detail,
+        .hexagon,
+        .landing-stage::before {
+            transition: none;
+        }
+    }
+}
