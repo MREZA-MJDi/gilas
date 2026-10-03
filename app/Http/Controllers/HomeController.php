@@ -21,10 +21,10 @@ class HomeController extends Controller
             ],
             [
                 'title' => 'سفارش',
-                'text' => 'برای سفارش آنلاین از منو وارد شو.',
+                'text' => 'سفارش از منوی گیلاس شروع می‌شود.',
                 'cta' => 'شروع سفارش',
                 'url' => route('menu.index'),
-                'icon' => '🍒',
+                'icon' => '↗',
             ],
             [
                 'title' => 'رزرو',
@@ -36,25 +36,11 @@ class HomeController extends Controller
                 'icon' => '◷',
             ],
             [
-                'title' => 'تجربه',
-                'text' => 'حال‌وهوای گیلاس را کشف کن.',
-                'cta' => 'کشف تجربه',
-                'url' => route('public.experience'),
-                'icon' => '✦',
-            ],
-            [
                 'title' => 'مسیریابی',
                 'text' => $restaurant?->address ?: 'مسیر رسیدن به گیلاس را پیدا کن.',
                 'cta' => 'پیدا کردن گیلاس',
                 'url' => route('public.location'),
                 'icon' => '⌖',
-            ],
-            [
-                'title' => 'داستان',
-                'text' => 'گیلاس را از نگاه خودش بشناس.',
-                'cta' => 'داستان گیلاس',
-                'url' => route('public.story'),
-                'icon' => '♡',
             ],
         ]);
 
