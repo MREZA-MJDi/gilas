@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\MenuCategory;
-use App\Models\MenuItem;
 use App\Models\Restaurant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -12,7 +10,7 @@ class HomeExperienceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_home_is_rendered_from_active_restaurant_and_menu_data(): void
+    public function test_home_is_a_landing_only_page_with_real_navigation_routes(): void
     {
         $restaurant = Restaurant::create([
             'name' => 'گیلاس',
@@ -27,44 +25,20 @@ class HomeExperienceTest extends TestCase
             'reservation_enabled' => true,
         ]);
 
-        $category = MenuCategory::create([
-            'restaurant_id' => $restaurant->id,
-            'name' => 'قهوه',
-            'slug' => 'coffee',
-            'description' => 'انتخاب‌های گرم گیلاس.',
-            'sort_order' => 1,
-            'is_active' => true,
-        ]);
+        $response = $this->get(route('home'));
 
-        MenuItem::create([
-            'restaurant_id' => $restaurant->id,
-            'menu_category_id' => $category->id,
-            'name' => 'لاته',
-            'slug' => 'latte',
-            'price' => 150000,
-            'sort_order' => 1,
-            'is_active' => true,
-            'is_available' => true,
-        ]);
-
-        $this->get(route('home'))
+        $response
             ->assertOk()
-            ->assertSee('گیلاس')
-            ->assertSee('لاته')
+            ->assertSee('GILAS')
             ->assertSee(route('menu.index'), false)
-            ->assertSee(route('menu.category', ['slug' => 'coffee']), false);
+            ->assertSee(route('public.reservation'), false)
+            ->assertSee(route('public.experience'), false)
+            ->assertSee(route('public.location'), false)
+            ->assertSee(route('public.story'), false);
 
-        $this->get(route('menu.index'))
-            ->assertOk()
-            ->assertSee('لاته');
-
-        $this->get(route('menu.category', ['slug' => 'coffee']))
-            ->assertOk()
-            ->assertSee('لاته');
-
-        $this->get(route('menu.item', ['slug' => 'latte']))
-            ->assertOk()
-            ->assertSee('لاته');
+        $response->assertDontSee('Today at');
+        $response->assertDontSee('چیزهایی که امروز');
+        $response->assertDontSee('انتخاب‌های امروز');
     }
 
     public function test_home_still_works_when_no_restaurant_has_been_provisioned(): void
