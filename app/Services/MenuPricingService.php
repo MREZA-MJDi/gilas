@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\MenuItem;
-use App\Models\MenuItemOption;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -34,7 +33,21 @@ class MenuPricingService
             }
         }
 
-        $normalizedIds = array_map('intval', array_values($optionValueIds));
+        $normalizedIds = [];
+
+        foreach (array_values($optionValueIds) as $valueId) {
+            $normalized = filter_var($valueId, FILTER_VALIDATE_INT, [
+                'options' => ['min_range' => 1],
+            ]);
+
+            if ($normalized === false) {
+                throw ValidationException::withMessages([
+                    'options' => 'Every option value id must be a positive integer.',
+                ]);
+            }
+
+            $normalizedIds[] = (int) $normalized;
+        }
 
         if (count($normalizedIds) !== count(array_unique($normalizedIds))) {
             throw ValidationException::withMessages([
@@ -79,7 +92,7 @@ class MenuPricingService
                     ]);
                 }
 
-                return $value;
+                return $value->setRelation('option', $option);
             }
         }
 
@@ -92,7 +105,7 @@ class MenuPricingService
     {
         foreach ($options as $option) {
             $count = $selected
-                ->filter(fn ($value) => $value->menu_item_option_id === $option->id)
+                ->filter(fn ($value) => (int) $value->menu_item_option_id === (int) $option->id)
                 ->count();
 
             if (!$option->is_active) {
