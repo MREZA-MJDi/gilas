@@ -17,6 +17,8 @@
 <body class="min-h-screen bg-[#120f0d] text-stone-100 antialiased">
     
     @include('components.footsteps')
-    @yield('content')
+    <div class="gilas-content">
+        @yield('content')
+    </div>
 </body>
 </html>
