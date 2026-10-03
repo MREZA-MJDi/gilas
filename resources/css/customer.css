@@ -1,0 +1,36 @@
+@import './app.css';
+
+@layer components {
+    .customer-page {
+        min-height: 100svh;
+        background:
+            radial-gradient(circle at 12% 4%, color-mix(in srgb, var(--gilas-cherry), transparent 94%), transparent 28%),
+            radial-gradient(circle at 90% 36%, color-mix(in srgb, var(--gilas-cyan), transparent 96%), transparent 28%),
+            var(--gilas-ink);
+    }
+
+    .customer-surface {
+        min-width: 0;
+        border: 1px solid var(--line-soft);
+        background: color-mix(in srgb, var(--surface-1), transparent 8%);
+        box-shadow: 0 24px 80px rgba(0,0,0,.20);
+    }
+
+    .customer-sticky {
+        position: sticky;
+        top: 0;
+        z-index: var(--z-sticky);
+        padding-top: env(safe-area-inset-top);
+        background: color-mix(in srgb, var(--gilas-ink), transparent 12%);
+        backdrop-filter: blur(22px);
+        -webkit-backdrop-filter: blur(22px);
+    }
+
+    .customer-bottom-space {
+        padding-bottom: max(88px, calc(72px + env(safe-area-inset-bottom)));
+    }
+
+    @media (min-width: 768px) {
+        .customer-bottom-space { padding-bottom: 32px; }
+    }
+}
