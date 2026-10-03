@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MenuItemOption extends Model
 {
-    protected $fillable = ['menu_item_id','name','min_select','max_select','is_required','sort_order'];
+    protected $fillable = ['menu_item_id','name','min_select','max_select','is_required','is_active','sort_order'];
 
-    protected function casts(): array { return ['min_select'=>'integer','max_select'=>'integer','is_required'=>'boolean']; }
+    protected function casts(): array { return ['min_select'=>'integer','max_select'=>'integer','is_required'=>'boolean','is_active'=>'boolean']; }
 
     public function item(): BelongsTo { return $this->belongsTo(MenuItem::class,'menu_item_id'); }
     public function values(): HasMany { return $this->hasMany(MenuItemOptionValue::class); }
