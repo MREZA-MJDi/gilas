@@ -30,7 +30,6 @@
     .ui-tap-target{min-width:var(--tap-target);min-height:var(--tap-target);}
     .ui-safe-bottom{padding-bottom:max(16px,env(safe-area-inset-bottom));}
 
-@layer components {
     .ui-section{
         position:relative;
         container-type:inline-size;
@@ -136,6 +135,4 @@
     @media(prefers-reduced-motion:reduce){
         .ui-scroll-x{scroll-behavior:auto;}
     }
-}
-
 }
