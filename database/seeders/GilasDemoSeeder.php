@@ -180,10 +180,10 @@ class GilasDemoSeeder extends Seeder
         ];
 
         $address = CustomerAddress::firstOrCreate(
-            ['customer_id' => $customers[1]->id, 'title' => 'خانه'],
+            ['customer_id' => $customers[4]->id, 'title' => 'خانه'],
             [
-                'recipient_name' => $customers[1]->name,
-                'phone' => $customers[1]->phone,
+                'recipient_name' => $customers[4]->name,
+                'phone' => $customers[4]->phone,
                 'address' => 'تهران، خیابان نمونه، کوچه سوم، پلاک ۸',
                 'postal_code' => '1234567890',
                 'is_default' => true,
