@@ -4,38 +4,50 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#0b090d">
-    <title>@yield('title', 'پنل مدیریت خانه گیلاسی')</title>
+    <meta name="theme-color" content="#141117">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <title>@yield('title', 'پنل مدیریت گیلاس')</title>
     @unless(app()->environment('testing'))
         @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     @endunless
 </head>
 <body class="admin-page">
-<div class="admin-shell">
-    <aside class="admin-sidebar">
-        <div class="flex items-center gap-3">
-            <div class="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/5 text-lg font-black text-rose-100">گ</div>
-            <div class="admin-nav-label min-w-0">
-                <p class="truncate text-sm font-bold text-white">خانه گیلاسی</p>
-                <p class="truncate text-xs text-stone-500">Operations Room</p>
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <a href="{{ route('admin.dashboard', $restaurant?->slug ?? '') }}" class="admin-brand" aria-label="داشبورد گیلاس">
+                <span class="admin-brand__mark">گ</span>
+                <span class="admin-brand__copy">
+                    <strong>گیلاس</strong>
+                    <small>Operations Room</small>
+                </span>
+            </a>
+
+            <nav class="admin-nav" aria-label="ناوبری مدیریت">
+                <a href="#overview" data-admin-link class="is-active">نمای کلی</a>
+                <a href="#orders" data-admin-link>سفارش‌ها</a>
+                <a href="#kitchen" data-admin-link>آشپزخانه</a>
+                <a href="#tables" data-admin-link>میزها و QR</a>
+                <a href="#delivery" data-admin-link>تحویل</a>
+                <a href="#cashier" data-admin-link>صندوق</a>
+            </nav>
+
+            <div class="admin-sidebar__foot">
+                <span>نسخه‌ی workspace</span>
+                <strong>GILAS / LIVE</strong>
             </div>
-        </div>
-        <nav class="mt-8 space-y-2" aria-label="ناوبری مدیریت">
-            @foreach([['داشبورد','overview','is-active'],['سفارش‌ها','orders',''],['آشپزخانه','kitchen',''],['میزها و QR','tables',''],['منو و غذاها','menu',''],['تحویل','delivery',''],['صندوق','cashier','']] as [$label,$icon,$active])
-                <a href="#" class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold {{ $active ? 'bg-rose-200/10 text-white' : 'text-stone-400 hover:bg-white/5 hover:text-white' }}">
-                    <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-white/5 text-xs">{{ strtoupper(substr($icon,0,1)) }}</span>
-                    <span class="admin-nav-label">{{ $label }}</span>
-                </a>
-            @endforeach
+        </aside>
+
+        <main class="admin-main">
+            @yield('content')
+        </main>
+
+        <nav class="admin-mobile-nav" aria-label="ناوبری سریع">
+            <a href="#overview" data-admin-link class="is-active"><span>⌂</span><small>نمای کلی</small></a>
+            <a href="#orders" data-admin-link><span>◉</span><small>سفارش</small></a>
+            <a href="#kitchen" data-admin-link><span>◈</span><small>آشپزخانه</small></a>
+            <a href="#tables" data-admin-link><span>▦</span><small>میزها</small></a>
+            <a href="#delivery" data-admin-link><span>↗</span><small>تحویل</small></a>
         </nav>
-    </aside>
-    <main class="admin-main">@yield('content')</main>
-    <nav class="admin-mobile-nav" aria-label="ناوبری سریع">
-        <a href="#" class="is-active" aria-label="داشبورد">⌂</a>
-        <a href="#" aria-label="سفارش‌ها">◉</a>
-        <a href="#" aria-label="آشپزخانه">◈</a>
-        <a href="#" aria-label="میزها">▦</a>
-    </nav>
-</div>
+    </div>
 </body>
 </html>

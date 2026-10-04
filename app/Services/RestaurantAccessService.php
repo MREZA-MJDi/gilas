@@ -9,16 +9,25 @@ use App\Models\User;
 
 class RestaurantAccessService
 {
+    /** @var array<string, \App\Models\Restaurant|null> */
+    private array $membershipCache = [];
+
     public function can(User $user, Restaurant $restaurant, RestaurantPermission|string $permission): bool
     {
         $permission = $permission instanceof RestaurantPermission
             ? $permission
             : RestaurantPermission::from($permission);
 
-        $membership = $user->restaurants()
-            ->where('restaurants.id', $restaurant->id)
-            ->wherePivot('is_active', true)
-            ->first();
+        $cacheKey = $user->getKey() . ':' . $restaurant->getKey();
+
+        if (!array_key_exists($cacheKey, $this->membershipCache)) {
+            $this->membershipCache[$cacheKey] = $user->restaurants()
+                ->where('restaurants.id', $restaurant->id)
+                ->wherePivot('is_active', true)
+                ->first();
+        }
+
+        $membership = $this->membershipCache[$cacheKey];
 
         if (!$membership) {
             return false;

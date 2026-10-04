@@ -1,5 +1,8 @@
 @extends('layouts.customer')
 
+@section('body_class', 'customer-table-menu')
+@section('hide_footer', '1')
+
 @php
     $coverUrl = $restaurant->cover_image_path
         ? \Illuminate\Support\Facades\Storage::url($restaurant->cover_image_path)
@@ -19,7 +22,7 @@
                     'name' => $item->name,
                     'description' => $item->description,
                     'price' => (int) $item->price,
-                    'image' => $item->image_path ? \Illuminate\Support\Facades\Storage::url($item->image_path) : null,
+                    'image' => $item->image_url,
                     'variants' => $item->variants->map(fn ($variant) => [
                         'id' => $variant->id, 'name' => $variant->name, 'price' => (int) $variant->price,
                     ])->values()->all(),
@@ -136,7 +139,7 @@
                                     <button type="button" data-open-item="{{ $item->id }}" class="block w-full text-right">
                                         <div class="relative aspect-[16/10] overflow-hidden bg-[#27201c]">
                                             @if($item->image_path)
-                                                <img src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}" alt="{{ $item->name }}" loading="lazy" decoding="async" width="800" height="800"
+                                                <img src="{{ $item->image_url }}" alt="{{ $item->name }}" loading="lazy" decoding="async" width="800" height="800"
                                                      class="size-full object-contain p-[7%] transition duration-700 group-hover:scale-[1.035]">
                                             @else
                                                 <div class="grid size-full place-items-center bg-[radial-gradient(circle_at_30%_20%,rgba(244,114,182,.16),transparent_36%),linear-gradient(135deg,#2b211d,#171311)]"><span class="text-5xl font-bold text-white/10">گ</span></div>
@@ -220,6 +223,26 @@
                     <p class="text-base font-semibold text-white">سبدت خالیه</p>
                     <p class="mt-1 text-sm text-stone-500">از منو یک غذا انتخاب کن.</p>
                 </div>
+                <section class="mt-5 rounded-3xl border border-white/8 bg-white/[0.035] p-4" aria-labelledby="table-payment-heading">
+                    <p id="table-payment-heading" class="text-sm font-medium text-stone-200">چطور پرداخت می‌کنی؟</p>
+                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                        <label class="table-payment-choice is-selected">
+                            <input type="radio" name="payment-method" value="online" checked>
+                            <span>
+                                <strong>پرداخت آنلاین</strong>
+                                <small>پرداخت امن قبل از تسویه سفارش</small>
+                            </span>
+                        </label>
+                        <label class="table-payment-choice">
+                            <input type="radio" name="payment-method" value="cashier">
+                            <span>
+                                <strong>پرداخت در صندوق</strong>
+                                <small>تسویه هنگام خروج از کافه</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
                 <div class="mt-5 rounded-3xl border border-white/8 bg-white/[0.035] p-4">
                     <label for="customer-note" class="text-sm font-medium text-stone-200">یادداشت برای آشپزخانه</label>
                     <textarea id="customer-note" rows="3" maxlength="500" placeholder="مثلاً بدون پیاز یا نکته‌ای که لازم است بدانیم..."
@@ -242,7 +265,12 @@
             <div class="mt-8 rounded-3xl border border-white/8 bg-white/[0.035] p-4">
                 <div class="flex items-center justify-between gap-4 text-sm"><span class="text-stone-500">مبلغ نهایی</span><strong class="text-rose-100"><span id="success-total">۰</span> {{ $restaurant->currency }}</strong></div>
             </div>
-            <button type="button" data-close-success class="mt-4 h-13 w-full rounded-2xl border border-white/10 bg-white/5 text-sm font-semibold text-white">بازگشت به منو</button>
+            <a id="success-track-link"
+               href="#"
+               class="mt-4 flex h-13 w-full items-center justify-center rounded-2xl bg-rose-100 text-sm font-bold text-stone-950">
+                پیگیری سفارش
+            </a>
+            <button type="button" data-close-success class="mt-3 h-13 w-full rounded-2xl border border-white/10 bg-white/5 text-sm font-semibold text-white">بازگشت به منو</button>
         </div>
     </div>
 

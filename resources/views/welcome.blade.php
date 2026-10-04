@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0b090d">
+    <meta name="theme-color" content="#141117">
     <meta name="description" content="{{ $restaurant?->description ?: 'گیلاس — یک تجربه خوش‌طعم و متفاوت.' }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <title>{{ $restaurant?->name ?: 'گیلاس' }}</title>
@@ -14,10 +14,29 @@
 <body class="gilas-landing">
     @include('components.footsteps')
 
-    <main class="landing-stage" aria-label="{{ $restaurant?->name ?: 'گیلاس' }}">
+    <main class="landing-stage" aria-label="ورود به گیلاس">
+        <nav class="landing-nav" aria-label="مسیرهای سریع گیلاس">
+            <div class="landing-nav__links">
+                <a href="{{ route('menu.index') }}">منو</a>
+                <a href="{{ route('menu.index') }}">سفارش</a>
+            </div>
+
+            <button id="switch"
+                    class="vision-switch"
+                    type="button"
+                    aria-label="تغییر حالت نمایش"
+                    aria-pressed="false">
+                <span aria-hidden="true"></span>
+            </button>
+
+            <div class="landing-nav__links landing-nav__links--after">
+                <a href="{{ route('public.reservation') }}">رزرو</a>
+                <a href="{{ route('public.location') }}">مسیر</a>
+            </div>
+        </nav>
+
         <div class="landing-copy">
-            <h1>یک تجربه<br><strong>خوش‌طعم و متفاوت</strong></h1>
-            <p>{{ $restaurant?->description ?: 'منو، فضا و حال‌وهوای گیلاس؛ همه‌چیز از یک لمس شروع می‌شود.' }}</p>
+            <h1>از همین‌جا<br><strong>شروع کن.</strong></h1>
         </div>
 
         <div class="honey-detail" data-honey-detail>
@@ -59,14 +78,6 @@
                 </div>
             @endforeach
         </div>
-
-        <button id="switch"
-                class="vision-switch"
-                type="button"
-                aria-label="تغییر حالت نمایش"
-                aria-pressed="false">
-            <span aria-hidden="true"></span>
-        </button>
 
     </main>
 </body>

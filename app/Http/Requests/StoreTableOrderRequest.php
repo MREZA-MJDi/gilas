@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTableOrderRequest extends FormRequest
 {
@@ -22,6 +24,7 @@ class StoreTableOrderRequest extends FormRequest
     {
         return [
             'customer_note' => ['nullable', 'string', 'max:2000'],
+            'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'items' => ['required', 'array', 'min:1', 'max:100'],
             'items.*' => ['required', 'array'],
             'items.*.menu_item_id' => ['required', 'integer', 'min:1'],

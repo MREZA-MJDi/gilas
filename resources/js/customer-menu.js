@@ -21,6 +21,7 @@
     const successSheet = $('#success-sheet');
     const alertBox = $('#order-alert');
     const submitButton = $('[data-submit-order]');
+    const successTrackLink = $('#success-track-link');
     const search = $('#menu-search');
 
     bind();
@@ -39,6 +40,14 @@
         $('[data-close-success]')?.addEventListener('click', closeSuccess);
         submitButton?.addEventListener('click', submitOrder);
 
+        all('input[name="payment-method"]').forEach(input => {
+            input.addEventListener('change', () => {
+                all('.table-payment-choice').forEach(choice => {
+                    choice.classList.toggle('is-selected', choice.querySelector('input')?.checked === true);
+                });
+            });
+        });
+
         document.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
             if (!successSheet.classList.contains('hidden')) closeSuccess();
@@ -55,7 +64,7 @@
         itemContent.innerHTML =
             '<div class="overflow-hidden rounded-3xl border border-white/8 bg-white/[0.025]">' +
                 (item.image
-                    ? '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.name) + '" class="aspect-[16/9] w-full object-cover">'
+                    ? '<div class="grid aspect-[5/4] place-items-center overflow-hidden bg-[#211a20]"><img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.name) + '" class="size-full object-contain p-[6%]"></div>'
                     : '<div class="grid aspect-[16/9] place-items-center bg-[radial-gradient(circle_at_30%_20%,rgba(244,114,182,.16),transparent_36%),linear-gradient(135deg,#2b211d,#171311)]"><span class="text-6xl font-bold text-white/10">گ</span></div>') +
                 '<div class="p-5"><div class="flex items-start justify-between gap-4"><div>' +
                     '<h2 id="sheet-title" class="text-2xl font-bold text-white">' + escapeHtml(item.name) + '</h2>' +
@@ -259,6 +268,7 @@
                 },
                 body: JSON.stringify({
                     customer_note: ($('#customer-note')?.value || '').trim() || null,
+                    payment_method: document.querySelector('input[name="payment-method"]:checked')?.value || 'online',
                     items: state.cart.map(line => ({
                         menu_item_id: line.menu_item_id,
                         menu_item_variant_id: line.menu_item_variant_id,
@@ -280,6 +290,9 @@
             closeCart();
             $('#success-order-number').textContent = data?.data?.order_number || '—';
             $('#success-total').textContent = formatPrice(data?.data?.total || 0);
+            if (successTrackLink && data?.data?.public_token) {
+                successTrackLink.href = '/orders/' + encodeURIComponent(data.data.public_token);
+            }
             show(successSheet);
         } catch (error) {
             alertBox.textContent = error.message || 'خطایی رخ داد. دوباره تلاش کن.';

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\DeliveryStatus;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Enums\RestaurantUserRole;
@@ -95,6 +96,24 @@ class GilasDemoSeeder extends Seeder
         $items[] = $this->seedItem($categories['cold'], 'آیس‌لاته', 'iced-latte', 'لاته سرد با یخ.', 165000, 1);
         $items[] = $this->seedItem($categories['cold'], 'لیموناد گیلاس', 'gilas-lemonade', 'لیموناد تازه با حال‌وهوای گیلاس.', 140000, 2);
         $items[] = $this->seedItem($categories['special'], 'صبحانه دو نفره گیلاس', 'gilas-duo-breakfast', 'سینی کامل برای دو نفر.', 490000, 1);
+        $burgers = MenuCategory::firstOrCreate(
+            ['restaurant_id' => $restaurant->id, 'slug' => 'burgers'],
+            ['name' => 'برگرها', 'description' => 'برگرهای داغ و سیرکننده برای یک انتخاب جدی.', 'sort_order' => 6, 'is_active' => true],
+        );
+        $sides = MenuCategory::firstOrCreate(
+            ['restaurant_id' => $restaurant->id, 'slug' => 'sides'],
+            ['name' => 'سرخ‌کردنی‌ها', 'description' => 'کنارغذاهای ترد و خوش‌نمک.', 'sort_order' => 7, 'is_active' => true],
+        );
+        $pasta = MenuCategory::firstOrCreate(
+            ['restaurant_id' => $restaurant->id, 'slug' => 'pasta'],
+            ['name' => 'پاستا', 'description' => 'پاستاهای گرم و تازه برای یک وعده کامل.', 'sort_order' => 8, 'is_active' => true],
+        );
+        $items[] = $this->seedItem($burgers, 'برگر گوساله', 'beef-burger', 'برگر گوساله با پنیر چدار، کاهو و سس مخصوص.', 280000, 1);
+        $items[] = $this->seedItem($burgers, 'چیزبرگر گیلاس', 'gilas-cheeseburger', 'گوشت گوساله، پنیر، پیاز کاراملی و سس گیلاس.', 315000, 2);
+        $items[] = $this->seedItem($sides, 'سیب‌زمینی مخصوص', 'gilas-fries', 'سیب‌زمینی ترد با ادویه مخصوص گیلاس.', 95000, 1);
+        $items[] = $this->seedItem($sides, 'سیب‌زمینی پنیر', 'cheese-fries', 'سیب‌زمینی ترد با پنیر آب‌شده.', 135000, 2);
+        $items[] = $this->seedItem($pasta, 'پاستا آلفردو', 'alfredo-pasta', 'پاستای خامه‌ای با قارچ و پنیر پارمزان.', 265000, 1);
+        $items[] = $this->seedItem($pasta, 'پاستا گوجه و ریحان', 'tomato-basil-pasta', 'پاستای تازه با گوجه، ریحان و پارمزان.', 240000, 2);
 
         $latte = $items[1];
         $latte->variants()->firstOrCreate(['name' => 'متوسط'], [
@@ -275,7 +294,7 @@ class GilasDemoSeeder extends Seeder
             };
 
             $payment = $order->payment()->firstOrCreate([], [
-                'method' => $type === OrderType::Delivery ? 'online' : 'cash',
+                 'method' => $type === OrderType::Delivery ? PaymentMethod::Online : PaymentMethod::Cashier,
                 'status' => $paymentStatus,
                 'amount' => $total,
                 'paid_at' => $paymentStatus === PaymentStatus::Paid ? now()->subMinutes(7) : null,
@@ -283,7 +302,7 @@ class GilasDemoSeeder extends Seeder
 
             if ($paymentStatus === PaymentStatus::Paid && ! $payment->transactions()->exists()) {
                 $payment->transactions()->create([
-                    'provider' => $payment->method === 'online' ? 'demo_gateway' : 'cashier',
+                    'provider' => $payment->method === PaymentMethod::Online ? 'demo_gateway' : 'cashier',
                     'transaction_id' => 'DEMO-' . $order->id,
                     'reference' => 'REF-' . str_pad((string) $order->id, 8, '0', STR_PAD_LEFT),
                     'amount' => $total,
@@ -319,18 +338,44 @@ class GilasDemoSeeder extends Seeder
 
     private function seedItem(MenuCategory $category, string $name, string $slug, string $description, int $price, int $sortOrder): MenuItem
     {
-        return MenuItem::firstOrCreate(
+        $images = [
+            'americano' => 'https://images.unsplash.com/photo-1578928158469-d07d1fe0610f?auto=format&fit=crop&w=1200&q=85',
+            'gilas-latte' => 'https://images.unsplash.com/photo-1578928158469-d07d1fe0610f?auto=format&fit=crop&w=1200&q=85',
+            'cappuccino' => 'https://images.unsplash.com/photo-1578928158469-d07d1fe0610f?auto=format&fit=crop&w=1200&q=85',
+            'egg-toast' => 'https://images.unsplash.com/photo-1559332167-dd24746aa6f5?auto=format&fit=crop&w=1200&q=85',
+            'cheese-croissant' => 'https://images.unsplash.com/photo-1757124034342-3bbd5364a41d?auto=format&fit=crop&w=1200&q=85',
+            'gilas-cheesecake' => 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200&q=85',
+            'warm-brownie' => 'https://images.unsplash.com/photo-1777647364657-2319b02095de?auto=format&fit=crop&w=1200&q=85',
+            'iced-latte' => 'https://images.unsplash.com/photo-1578928158469-d07d1fe0610f?auto=format&fit=crop&w=1200&q=85',
+            'gilas-lemonade' => 'https://images.unsplash.com/photo-1714968382548-9234f0c4e342?auto=format&fit=crop&w=1200&q=85',
+            'gilas-duo-breakfast' => 'https://images.unsplash.com/photo-1559332167-dd24746aa6f5?auto=format&fit=crop&w=1200&q=85',
+            'beef-burger' => 'https://images.unsplash.com/photo-1610440042657-612c34d95e9f?auto=format&fit=crop&w=1200&q=85',
+            'gilas-cheeseburger' => 'https://images.unsplash.com/photo-1610440042657-612c34d95e9f?auto=format&fit=crop&w=1200&q=85',
+            'gilas-fries' => 'https://images.unsplash.com/photo-1615485290836-4ebcebf44aaf?auto=format&fit=crop&w=1200&q=85',
+            'cheese-fries' => 'https://images.unsplash.com/photo-1615485290836-4ebcebf44aaf?auto=format&fit=crop&w=1200&q=85',
+            'alfredo-pasta' => 'https://images.unsplash.com/photo-1579349443343-73da56a71a20?auto=format&fit=crop&w=1200&q=85',
+            'tomato-basil-pasta' => 'https://images.unsplash.com/photo-1579349443343-73da56a71a20?auto=format&fit=crop&w=1200&q=85',
+        ];
+
+        $item = MenuItem::firstOrCreate(
             ['restaurant_id' => $category->restaurant_id, 'slug' => $slug],
             [
                 'menu_category_id' => $category->id,
                 'name' => $name,
                 'description' => $description,
+                'image_path' => $images[$slug] ?? null,
                 'price' => $price,
                 'sort_order' => $sortOrder,
                 'is_active' => true,
                 'is_available' => true,
             ],
         );
+
+        if (blank($item->image_path) && isset($images[$slug])) {
+            $item->update(['image_path' => $images[$slug]]);
+        }
+
+        return $item;
     }
 
     private function customer(string $phone, string $name): Customer

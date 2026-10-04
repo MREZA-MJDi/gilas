@@ -1,13 +1,14 @@
 <?php
 
-namespace AppHttpControllersAdmin;
+namespace App\Http\Controllers\Admin;
 
-use AppEnumsOrderStatus;
-use AppHttpControllersController;
-use AppModelsRestaurant;
-use IlluminateSupportCarbon;
-use IlluminateSupportFacadesAuth;
-use IlluminateViewView;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
+use App\Http\Controllers\Controller;
+use App\Models\Payment;
+use App\Models\Restaurant;
+use Illuminate\Support\Carbon;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
@@ -27,19 +28,25 @@ class DashboardController extends Controller
             OrderStatus::Delivered->value,
         ];
 
-        $ordersToday = $restaurant->orders()->whereDate('created_at', $today)->count();
+        $ordersToday = $restaurant->orders()
+            ->whereDate('created_at', $today)
+            ->count();
 
-        $revenueToday = (int) $restaurant->orders()
+        $salesToday = (int) $restaurant->orders()
             ->whereDate('created_at', $today)
             ->where('status', '!=', OrderStatus::Cancelled->value)
             ->sum('total');
 
-        $paidToday = (int) $restaurant->orders()
-            ->whereDate('created_at', $today)
-            ->whereHas('payment', fn ($query) => $query->where('status', 'paid'))
-            ->sum('total');
+        $paidToday = (int) Payment::query()
+            ->where('status', PaymentStatus::Paid)
+            ->whereHas('order', fn ($query) => $query
+                ->where('restaurant_id', $restaurant->id)
+                ->whereDate('created_at', $today))
+            ->sum('amount');
 
-        $openOrders = $restaurant->orders()->whereIn('status', $openStatuses)->count();
+        $openOrders = $restaurant->orders()
+            ->whereIn('status', $openStatuses)
+            ->count();
 
         $occupiedTableIds = $restaurant->orders()
             ->whereIn('status', $openStatuses)
@@ -48,10 +55,8 @@ class DashboardController extends Controller
             ->unique()
             ->values();
 
-        $activeTables = $occupiedTableIds->count();
-
         $tables = $restaurant->tables()
-            ->with(['qrCode'])
+            ->with('qrCode')
             ->where('is_active', true)
             ->orderBy('floor')
             ->orderBy('zone')
@@ -84,20 +89,20 @@ class DashboardController extends Controller
             ->count();
 
         $recentOrders = $restaurant->orders()
-            ->with(['customer', 'table', 'items'])
-            ->latest()
+            ->with(['customer:id,name,phone', 'table:id,number', 'items:id,order_id,name,quantity,total_price'])
+            ->latest('created_at')
             ->limit(8)
             ->get();
 
         $kitchenQueue = $restaurant->orders()
-            ->with(['table', 'items'])
+            ->with(['table:id,number', 'items:id,order_id,name,quantity,total_price'])
             ->whereIn('status', [
                 OrderStatus::Pending,
                 OrderStatus::Confirmed,
                 OrderStatus::Preparing,
                 OrderStatus::Ready,
             ])
-            ->latest()
+            ->latest('created_at')
             ->limit(6)
             ->get();
 
@@ -106,46 +111,47 @@ class DashboardController extends Controller
         $dailyRows = $restaurant->orders()
             ->whereBetween('created_at', [$start->copy()->startOfDay(), $today->copy()->endOfDay()])
             ->where('status', '!=', OrderStatus::Cancelled->value)
-            ->get(['created_at', 'total']);
+            ->selectRaw('DATE(created_at) as sales_day, COUNT(*) as order_count, COALESCE(SUM(total), 0) as revenue')
+            ->groupBy('sales_day')
+            ->orderBy('sales_day')
+            ->get()
+            ->keyBy('sales_day');
 
         $dailySales = collect(range(0, 6))->map(function (int $offset) use ($start, $dailyRows): array {
             $date = $start->copy()->addDays($offset);
-            $key = $date->toDateString();
-
-            $rows = $dailyRows->filter(
-                fn ($row) => $row->created_at->toDateString() === $key
-            );
+            $row = $dailyRows->get($date->toDateString());
 
             return [
                 'label' => $date->translatedFormat('D'),
                 'date' => $date->format('j M'),
-                'orders' => $rows->count(),
-                'revenue' => (int) $rows->sum('total'),
+                'orders' => (int) ($row?->order_count ?? 0),
+                'revenue' => (int) ($row?->revenue ?? 0),
             ];
         });
 
-        $user = Auth::user();
+        $maxDailyRevenue = max(1, (int) $dailySales->max('revenue'));
 
         return view('admin.dashboard', [
             'restaurant' => $restaurant,
-            'user' => $user,
-            'metrics' => compact(
-                'ordersToday',
-                'revenueToday',
-                'paidToday',
-                'openOrders',
-                'activeTables',
-                'menuCount',
-                'categoryCount',
-                'reservationsToday',
-                'openDeliveries',
-                'availableCouriers',
-            ),
+            'user' => request()->user(),
+            'metrics' => [
+                'ordersToday' => $ordersToday,
+                'salesToday' => $salesToday,
+                'paidToday' => $paidToday,
+                'openOrders' => $openOrders,
+                'activeTables' => $occupiedTableIds->count(),
+                'menuCount' => $menuCount,
+                'categoryCount' => $categoryCount,
+                'reservationsToday' => $reservationsToday,
+                'openDeliveries' => $openDeliveries,
+                'availableCouriers' => $availableCouriers,
+            ],
             'tables' => $tables,
             'occupiedTableIds' => $occupiedTableIds->map(fn ($id) => (int) $id)->all(),
             'recentOrders' => $recentOrders,
             'kitchenQueue' => $kitchenQueue,
             'dailySales' => $dailySales,
+            'maxDailyRevenue' => $maxDailyRevenue,
         ]);
     }
 }
