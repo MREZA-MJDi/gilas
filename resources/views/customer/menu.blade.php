@@ -289,10 +289,73 @@
                 <p>از دسته‌ها یا پیشنهادهای پایین شروع کن.</p>
             </div>
 
-            <div class="menu-cart__note">
-                <label for="public-customer-note">یادداشت</label>
-                <textarea id="public-customer-note" rows="3" maxlength="500" placeholder="مثلاً بدون پیاز..."></textarea>
-            </div>
+            <section class="menu-checkout" aria-labelledby="menu-checkout-heading">
+                <div class="menu-checkout__heading">
+                    <span class="eyebrow">CHECKOUT</span>
+                    <h3 id="menu-checkout-heading">چطور تحویل بگیری؟</h3>
+                </div>
+
+                @unless($tableToken)
+                    <div class="menu-choice-grid menu-checkout__choices" data-public-order-types>
+                        <label class="menu-choice menu-choice--selected">
+                            <span><strong>تحویل از کافه</strong><small>سریع‌تر، بدون هزینه ارسال</small></span>
+                            <input type="radio" name="public-order-type" value="pickup" checked>
+                        </label>
+                        <label class="menu-choice">
+                            <span><strong>ارسال به آدرس</strong><small>آدرس را برای تحویل وارد می‌کنی</small></span>
+                            <input type="radio" name="public-order-type" value="delivery">
+                        </label>
+                    </div>
+                @endunless
+
+                <div class="menu-checkout__fields">
+                    <div class="menu-checkout__field-row">
+                        <label>
+                            <span>نام</span>
+                            <input id="public-customer-name" type="text" autocomplete="name" maxlength="100" placeholder="نام و نام خانوادگی">
+                        </label>
+                        <label>
+                            <span>موبایل</span>
+                            <input id="public-customer-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="40" placeholder="۰۹۱۲...">
+                        </label>
+                    </div>
+
+                    <label data-public-email-field>
+                        <span>ایمیل <small>اختیاری</small></span>
+                        <input id="public-customer-email" type="email" autocomplete="email" maxlength="255" placeholder="example@mail.com">
+                    </label>
+
+                    <div data-public-address-fields hidden>
+                        <label>
+                            <span>آدرس تحویل</span>
+                            <textarea id="public-customer-address" rows="3" maxlength="2000" autocomplete="street-address" placeholder="آدرس کامل برای ارسال"></textarea>
+                        </label>
+                        <label class="menu-checkout__postal">
+                            <span>کد پستی <small>اختیاری</small></span>
+                            <input id="public-customer-postal" type="text" inputmode="numeric" maxlength="30" placeholder="۱۰ رقم">
+                        </label>
+                    </div>
+
+                    <div>
+                        <span class="menu-checkout__label">روش پرداخت</span>
+                        <div class="menu-choice-grid">
+                            <label class="menu-choice menu-choice--selected">
+                                <span><strong>پرداخت آنلاین</strong><small>پس از ثبت به مرحله پرداخت می‌روی</small></span>
+                                <input type="radio" name="public-payment-method" value="online" checked>
+                            </label>
+                            <label class="menu-choice">
+                                <span><strong>پرداخت در صندوق</strong><small>تسویه در کافه</small></span>
+                                <input type="radio" name="public-payment-method" value="cashier">
+                            </label>
+                        </div>
+                    </div>
+
+                    <label class="menu-cart__note">
+                        <span>یادداشت</span>
+                        <textarea id="public-customer-note" rows="3" maxlength="500" placeholder="مثلاً بدون پیاز..."></textarea>
+                    </label>
+                </div>
+            </section>
 
             <div class="menu-cart__footer">
                 <div>
