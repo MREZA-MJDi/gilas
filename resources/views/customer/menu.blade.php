@@ -14,7 +14,7 @@
             <a href="{{ route('home') }}" class="brand-lockup" aria-label="بازگشت به گیلاس">
                 <span class="brand-lockup__mark">
                     @if($restaurant->logo_path)
-                        <img src="{{ IlluminateSupportFacadesStorage::url($restaurant->logo_path) }}" alt="" width="44" height="44" decoding="async">
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($restaurant->logo_path) }}" alt="" width="44" height="44" decoding="async">
                     @else
                         <span aria-hidden="true">گ</span>
                     @endif
@@ -55,7 +55,7 @@
 
             @if($restaurant->cover_image_path)
                 <div class="public-menu__hero-media">
-                    <img src="{{ IlluminateSupportFacadesStorage::url($restaurant->cover_image_path) }}"
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($restaurant->cover_image_path) }}"
                          alt="{{ $restaurant->name }}"
                          width="960"
                          height="720"
@@ -83,7 +83,7 @@
                         <a href="{{ route('menu.item', ['slug' => $featuredItem->slug]) }}" class="public-featured-card">
                             <div class="public-featured-card__media">
                                 @if($featuredItem->image_path)
-                                    <img src="{{ IlluminateSupportFacadesStorage::url($featuredItem->image_path) }}"
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($featuredItem->image_path) }}"
                                          alt="{{ $featuredItem->name }}"
                                          width="640"
                                          height="640"
@@ -139,7 +139,7 @@
                                      data-search="{{ mb_strtolower(trim($item->name . ' ' . ($item->description ?? '')), 'UTF-8') }}">
                                 <a href="{{ route('menu.item', ['slug' => $item->slug]) }}" class="public-product-card__media">
                                     @if($item->image_path)
-                                        <img src="{{ IlluminateSupportFacadesStorage::url($item->image_path) }}"
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}"
                                              alt="{{ $item->name }}"
                                              loading="lazy"
                                              decoding="async"
