@@ -108,7 +108,7 @@
                 <p>{{ $restaurant->description ?: 'دسته را انتخاب کن، غذای موردنظرت را ببین و بدون خروج از همین صفحه انتخابش کن.' }}</p>
             </div>
 
-            @if($menu->isNotEmpty() && $menu->first()->items->isNotEmpty())
+            @if($initialCategory && $initialItem)
                 <div class="menu-explorer__layout">
                     <aside class="menu-rail menu-rail--categories" aria-label="دسته‌های منو">
                         <div class="menu-rail__heading">
@@ -119,9 +119,9 @@
                         <div class="menu-category-list" data-category-list>
                             @foreach($menu as $index => $category)
                                 <button type="button"
-                                        class="menu-category-button {{ $index === 0 ? 'is-active' : '' }}"
+                                        class="menu-category-button {{ $category->id === $initialCategory->id ? 'is-active' : '' }}"
                                         data-category-select="{{ $category->id }}"
-                                        aria-pressed="{{ $index === 0 ? 'true' : 'false' }}">
+                                        aria-pressed="{{ $category->id === $initialCategory->id ? 'true' : 'false' }}">
                                     <span class="menu-category-button__index">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
                                     <span class="menu-category-button__name">{{ $category->name }}</span>
                                     <span class="menu-category-button__arrow" aria-hidden="true">↙</span>
@@ -143,13 +143,13 @@
                             <div class="menu-focus__shadow" aria-hidden="true"></div>
                             <div class="menu-focus__media">
                                 <img data-focus-image
-                                     src="{{ $menu->first()->items->first()->image_path ? IlluminateSupportFacadesStorage::url($menu->first()->items->first()->image_path) : '' }}"
+                                     src="{{ $initialItem->image_path ? IlluminateSupportFacadesStorage::url($initialItem->image_path) : '' }}"
                                      alt="{{ $initialItem?->name ?: '' }}"
                                      width="900"
                                      height="900"
                                      decoding="async"
                                      fetchpriority="high"
-                                     @if(!$menu->first()->items->first()->image_path) hidden @endif>
+                                     @if(!$initialItem->image_path) hidden @endif>
                                 <div data-focus-fallback class="menu-focus__fallback" @if(!$initialItem?->image_path) hidden @endif aria-hidden="true">گ</div>
                             </div>
                         </div>
@@ -158,7 +158,7 @@
                             <div class="menu-focus__title-row">
                                 <div>
                                     <span class="eyebrow">انتخاب فعلی</span>
-                                    <h2 data-focus-name>{{ $menu->first()->items->first()->name }}</h2>
+                                    <h2 data-focus-name>{{ $initialItem->name }}</h2>
                                 </div>
                                 <strong class="menu-focus__price">
                                     <span data-focus-price>{{ number_format((int) ($initialItem?->price ?? 0)) }}</span>
@@ -187,11 +187,11 @@
                         </div>
 
                         <div class="menu-item-list" data-item-list>
-                            @foreach($initialCategory?->items ?? collect() as $item)
+                            @foreach($initialCategory->items as $item)
                                 <button type="button"
-                                        class="menu-item-button {{ $loop->first ? 'is-active' : '' }}"
+                                        class="menu-item-button {{ $item->id === $initialItem->id ? 'is-active' : '' }}"
                                         data-item-select="{{ $item->id }}"
-                                        aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
+                                        aria-pressed="{{ $item->id === $initialItem->id ? 'true' : 'false' }}">
                                     <span class="menu-item-button__thumb">
                                         @if($item->image_path)
                                             <img src="{{ IlluminateSupportFacadesStorage::url($item->image_path) }}" alt="" width="96" height="96" loading="lazy" decoding="async">
