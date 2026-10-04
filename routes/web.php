@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Customer\OrderTrackingController;
 use App\Http\Controllers\Customer\PublicMenuController;
 use App\Http\Controllers\Customer\PublicMenuItemController;
@@ -39,3 +41,17 @@ Route::get('/orders/{publicToken}', [OrderTrackingController::class, 'show'])
 Route::get('/orders/{publicToken}/status', [OrderTrackingController::class, 'status'])
     ->where('publicToken', '[A-Za-z0-9]+')
     ->name('customer.orders.status');
+
+Route::middleware('guest')->group(function (): void {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:6,1')
+        ->name('login.store');
+});
+
+Route::middleware('auth')->group(function (): void {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('/admin/{restaurant:slug}', DashboardController::class)
+        ->name('admin.dashboard');
+});
