@@ -483,11 +483,14 @@ class OrderService
             json_encode($b, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)
         ));
 
+        $paymentMethod = $data['payment_method'] ?? PaymentMethod::Cashier->value;
+        $paymentMethod = $paymentMethod instanceof PaymentMethod
+            ? $paymentMethod->value
+            : (string) $paymentMethod;
+
         $canonical = [
             'order_type' => $type->value,
-            'payment_method' => ($data['payment_method'] ?? PaymentMethod::Cashier->value) instanceof PaymentMethod
-                ? ($data['payment_method'] ?? PaymentMethod::Cashier)->value
-                : (string) ($data['payment_method'] ?? PaymentMethod::Cashier->value),
+            'payment_method' => $paymentMethod,
             'customer_id' => $data['customer_id'] ?? null,
             'restaurant_table_id' => $data['restaurant_table_id'] ?? null,
             'customer_address_id' => $data['customer_address_id'] ?? null,
