@@ -15,6 +15,26 @@
     @include('components.footsteps')
 
     <main class="landing-stage" aria-label="ورود به گیلاس">
+        <nav class="landing-nav" aria-label="مسیرهای سریع گیلاس">
+            <div class="landing-nav__links">
+                <a href="{{ route('menu.index') }}">منو</a>
+                <a href="{{ route('menu.index') }}">سفارش</a>
+            </div>
+
+            <button id="switch"
+                    class="vision-switch"
+                    type="button"
+                    aria-label="تغییر حالت نمایش"
+                    aria-pressed="false">
+                <span aria-hidden="true"></span>
+            </button>
+
+            <div class="landing-nav__links landing-nav__links--after">
+                <a href="{{ route('public.reservation') }}">رزرو</a>
+                <a href="{{ route('public.location') }}">مسیر</a>
+            </div>
+        </nav>
+
         <div class="landing-copy">
             <h1>از همین‌جا<br><strong>شروع کن.</strong></h1>
         </div>
@@ -59,13 +79,6 @@
             @endforeach
         </div>
 
-        <button id="switch"
-                class="vision-switch"
-                type="button"
-                aria-label="تغییر حالت نمایش"
-                aria-pressed="false">
-            <span aria-hidden="true"></span>
-        </button>
     </main>
 </body>
 </html>
