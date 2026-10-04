@@ -301,10 +301,12 @@ class OrderService
             ]);
         }
 
-        $paymentMethod = $data['payment_method'] ?? PaymentMethod::Cashier->value;
+        $paymentMethod = $data['payment_method'] ?? PaymentMethod::Cashier;
 
         try {
-            PaymentMethod::from((string) $paymentMethod);
+            $paymentMethod = $paymentMethod instanceof PaymentMethod
+                ? $paymentMethod
+                : PaymentMethod::from((string) $paymentMethod);
         } catch (\ValueError) {
             throw ValidationException::withMessages([
                 'payment_method' => 'The selected payment method is invalid.',
