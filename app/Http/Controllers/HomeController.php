@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MenuCategory;
 use App\Models\Restaurant;
 use Illuminate\View\View;
 
@@ -11,40 +12,40 @@ class HomeController extends Controller
     {
         $restaurant = $this->primaryRestaurant();
 
-        $honeycombItems = collect([
-            [
-                'title' => 'منو',
-                'text' => 'منوی گیلاس را ببین و انتخابت را شروع کن.',
-                'cta' => 'دیدن منو',
-                'url' => route('menu.index'),
-                'icon' => '☕',
-            ],
-            [
-                'title' => 'سفارش',
-                'text' => 'سفارش از منوی گیلاس شروع می‌شود.',
-                'cta' => 'شروع سفارش',
-                'url' => route('menu.index'),
-                'icon' => '↗',
-            ],
-            [
-                'title' => 'رزرو',
-                'text' => $restaurant?->settings?->reservation_enabled
-                    ? 'میزت را برای یک قرار خوب هماهنگ کن.'
-                    : 'برای هماهنگی میز با گیلاس تماس بگیر.',
-                'cta' => 'رزرو میز',
-                'url' => route('public.reservation'),
-                'icon' => '◷',
-            ],
-            [
-                'title' => 'مسیریابی',
-                'text' => $restaurant?->address ?: 'مسیر رسیدن به گیلاس را پیدا کن.',
-                'cta' => 'پیدا کردن گیلاس',
-                'url' => route('public.location'),
-                'icon' => '⌖',
-            ],
-        ]);
+        $categories = $restaurant
+            ? MenuCategory::query()
+                ->where('restaurant_id', $restaurant->id)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get(['id', 'name', 'slug', 'description'])
+            : collect();
 
-        return view('welcome', compact('restaurant', 'honeycombItems'));
+        $icons = [
+            'coffee' => 'coffee', 'breakfast' => 'sun', 'dessert' => 'cake',
+            'cold' => 'glass', 'special' => 'spark', 'burgers' => 'burger',
+            'sides' => 'fries', 'pasta' => 'pasta',
+        ];
+
+        $honeycombItems = $categories->map(function (MenuCategory $category) use ($icons): array {
+            $slug = strtolower($category->slug);
+
+            return [
+                'title' => $category->name,
+                'text' => $category->description ?: 'انتخابی از منوی خانه گیلاسی.',
+                'cta' => 'دیدن ' . $category->name,
+                'url' => route('menu.category', ['slug' => $category->slug]),
+                'icon' => $icons[$slug] ?? 'plate',
+            ];
+        })->values();
+
+        $primaryLinks = [
+            ['label' => 'منو', 'url' => route('menu.index')],
+            ['label' => 'رزرو', 'url' => route('public.reservation')],
+            ['label' => 'باشگاه گیلاس', 'url' => route('public.club')],
+            ['label' => 'مسیریابی', 'url' => route('public.location')],
+        ];
+
+        return view('welcome', compact('restaurant', 'honeycombItems', 'primaryLinks'));
     }
 
     private function primaryRestaurant(): ?Restaurant
