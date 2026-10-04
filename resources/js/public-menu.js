@@ -15,8 +15,8 @@
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const currency = root.dataset.currency || '';
     const orderUrl = root.dataset.orderUrl || '';
-    const $ = selector => root.querySelector(selector);
-    const all = selector => [...root.querySelectorAll(selector)];
+    const $ = selector => document.querySelector(selector);
+    const all = selector => [...document.querySelectorAll(selector)];
 
     const initialCategoryId = root.dataset.initialCategory || categories[0]?.id || null;
     const initialCategory = categoryMap.get(String(initialCategoryId)) || categories[0];
@@ -43,7 +43,7 @@
             button.addEventListener('click', () => selectCategory(button.dataset.categorySelect));
         });
 
-        root.addEventListener('click', event => {
+        document.addEventListener('click', event => {
             const itemButton = event.target.closest('[data-item-select]');
             if (itemButton) {
                 selectItem(itemButton.dataset.itemSelect);
