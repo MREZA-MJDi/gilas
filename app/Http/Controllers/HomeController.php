@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MenuCategory;
 use App\Models\Restaurant;
 use Illuminate\View\View;
 
@@ -12,47 +11,38 @@ class HomeController extends Controller
     {
         $restaurant = $this->primaryRestaurant();
 
-        $categories = $restaurant
-            ? MenuCategory::query()
-                ->where('restaurant_id', $restaurant->id)
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->orderBy('id')
-                ->get(['id', 'name', 'slug', 'description', 'sort_order'])
-            : collect();
-
-        $iconMap = [
-            'coffee' => '☕',
-            'breakfast' => '🥐',
-            'dessert' => '🍰',
-            'cold' => '🥤',
-            'special' => '🍒',
-            'burgers' => '🍔',
-            'sides' => '🍟',
-            'pasta' => '🍝',
-        ];
-
-        $categoryItems = $categories->map(fn (MenuCategory $category): array => [
-            'type' => 'category',
-            'title' => $category->name,
-            'text' => $category->description ?: 'این دسته را ببین و انتخابت را شروع کن.',
-            'cta' => 'دیدن ' . $category->name,
-            'url' => route('menu.category', $category->slug),
-            'icon' => $iconMap[$category->slug] ?? '🍽️',
-            'slug' => $category->slug,
-        ])->values();
-
-        $guideItems = collect([
-            ['type' => 'guide', 'title' => 'راهنمای گیلاس', 'text' => 'با یک حرکت کوتاه، خود Landing را یاد بگیر.', 'cta' => 'شروع راهنما', 'icon' => '✦'],
-            ['type' => 'guide', 'title' => 'انتخاب دسته', 'text' => 'یکی از دسته‌های غذا را انتخاب کن.', 'cta' => 'نمایش مرحله', 'icon' => '⌁'],
-            ['type' => 'guide', 'title' => 'دیدن منو', 'text' => 'جزئیات هر دسته را در منوی گیلاس ببین.', 'cta' => 'نمایش مرحله', 'icon' => '◌'],
-            ['type' => 'guide', 'title' => 'سفارش', 'text' => 'از منو انتخاب کن و سفارش را ادامه بده.', 'cta' => 'نمایش مرحله', 'icon' => '↗'],
-            ['type' => 'guide', 'title' => 'رزرو', 'text' => 'برای میزت از مسیر رزرو استفاده کن.', 'cta' => 'رزرو میز', 'icon' => '◷'],
-            ['type' => 'guide', 'title' => 'مسیریابی', 'text' => 'مسیر رسیدن به گیلاس را از ناوبری باز کن.', 'cta' => 'پیدا کردن گیلاس', 'icon' => '⌖'],
-            ['type' => 'guide', 'title' => 'از اول', 'text' => 'راهنما تمام شد؛ حالا آزادانه انتخاب کن.', 'cta' => 'شروع دوباره', 'icon' => '↺'],
+        $honeycombItems = collect([
+            [
+                'title' => 'منو',
+                'text' => 'منوی گیلاس را ببین و انتخابت را شروع کن.',
+                'cta' => 'دیدن منو',
+                'url' => route('menu.index'),
+                'icon' => '☕',
+            ],
+            [
+                'title' => 'سفارش',
+                'text' => 'سفارش از منوی گیلاس شروع می‌شود.',
+                'cta' => 'شروع سفارش',
+                'url' => route('menu.index'),
+                'icon' => '↗',
+            ],
+            [
+                'title' => 'رزرو',
+                'text' => $restaurant?->settings?->reservation_enabled
+                    ? 'میزت را برای یک قرار خوب هماهنگ کن.'
+                    : 'برای هماهنگی میز با گیلاس تماس بگیر.',
+                'cta' => 'رزرو میز',
+                'url' => route('public.reservation'),
+                'icon' => '◷',
+            ],
+            [
+                'title' => 'مسیریابی',
+                'text' => $restaurant?->address ?: 'مسیر رسیدن به گیلاس را پیدا کن.',
+                'cta' => 'پیدا کردن گیلاس',
+                'url' => route('public.location'),
+                'icon' => '⌖',
+            ],
         ]);
-
-        $honeycombItems = $categoryItems->concat($guideItems)->values();
 
         return view('welcome', compact('restaurant', 'honeycombItems'));
     }
