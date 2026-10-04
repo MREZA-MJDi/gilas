@@ -22,7 +22,7 @@ class PublicPageController extends Controller
 
         $content = match ($page) {
             'experience' => [
-                'eyebrow' => 'تجربه خانه',
+                'eyebrow' => 'تجربه',
                 'title' => 'اینجا فقط برای خوردن نیست.',
                 'copy' => 'فضایی برای مکث، گفت‌وگو و کشف یک جزئیات تازه در هر بار برگشتن.',
                 'action' => route('menu.index'),
@@ -35,29 +35,29 @@ class PublicPageController extends Controller
                     : 'برای هماهنگی میز با ما در تماس باش.',
                 'copy' => $restaurant->phone
                     ? 'برای رزرو یا هماهنگی ظرفیت با این شماره تماس بگیر: ' . $restaurant->phone
-                    : 'اطلاعات تماس و ظرفیت میز از طریق خانه گیلاسی در دسترس است.',
+                    : 'اطلاعات تماس و ظرفیت میز از طریق گیلاس در دسترس است.',
                 'action' => $restaurant->phone ? 'tel:' . $restaurant->phone : route('public.location'),
-                'action_label' => $restaurant->phone ? 'تماس با خانه گیلاسی' : 'دیدن موقعیت',
+                'action_label' => $restaurant->phone ? 'تماس با گیلاس' : 'دیدن موقعیت',
             ],
             'story' => [
                 'eyebrow' => 'داستان',
-                'title' => 'خانه گیلاسی، از نگاه خودش.',
+                'title' => 'گیلاس، از نگاه خودش.',
                 'copy' => $restaurant->description ?: 'یک خانه کوچک با طعم‌های جدی، حال خوب و جزئیات دوست‌داشتنی.',
                 'action' => route('menu.index'),
                 'action_label' => 'کشف منو',
             ],
             'location' => [
                 'eyebrow' => 'مسیریابی',
-                'title' => 'پیدا کردن خانه گیلاسی.',
-                'copy' => $restaurant->address ?: 'آدرس خانه گیلاسی هنوز در تنظیمات ثبت نشده است.',
+                'title' => 'پیدا کردن گیلاس.',
+                'copy' => $restaurant->address ?: 'آدرس گیلاس هنوز در تنظیمات ثبت نشده است.',
                 'action' => $restaurant->latitude && $restaurant->longitude
                     ? 'https://www.google.com/maps/search/?api=1&query=' . $restaurant->latitude . ',' . $restaurant->longitude
                     : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($restaurant->address ?? $restaurant->name),
                 'action_label' => 'باز کردن نقشه',
             ],
             'club' => [
-                'eyebrow' => 'باشگاه گیلاس',
-                'title' => 'قرار است هر بار، چیزی تازه پیدا کنی.',
+                'eyebrow' => 'باشگاه',
+                'title' => 'هر بار، یک چیز تازه پیدا کن.',
                 'copy' => 'این صفحه فعلاً ویترین باشگاه است؛ اتصال ثبت‌نام و امتیازدهی را روی همین foundation می‌سازیم.',
                 'action' => route('menu.index'),
                 'action_label' => 'برو به منو',

@@ -11,7 +11,7 @@
         <div class="public-item__media">
             @if($item->image_path)
                 <img
-                    src="{{ IlluminateSupportFacadesStorage::url($item->image_path) }}"
+                    src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}"
                     alt="{{ $item->name }}"
                     width="1200"
                     height="1200"

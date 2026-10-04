@@ -32,11 +32,11 @@ class PublicMenuController extends Controller
 
         $selectedSlug = is_string($categorySlug) ? trim($categorySlug) : null;
 
-        if ($selectedSlug !== null && $selectedSlug !== '') {
-            abort_unless($menu->contains(fn ($category) => $category->slug === $selectedSlug), 404);
-            $menu = $menu
-                ->filter(fn ($category) => $category->slug === $selectedSlug)
-                ->values();
+        if (filled($selectedSlug)) {
+            abort_unless(
+                $menu->contains(fn ($category) => $category->slug === $selectedSlug),
+                404
+            );
         }
 
         return view('customer.menu', [
@@ -56,6 +56,7 @@ class PublicMenuController extends Controller
 
         if (is_string($configuredSlug) && trim($configuredSlug) !== '') {
             $restaurant = (clone $query)->where('slug', trim($configuredSlug))->first();
+
             if ($restaurant) {
                 return $restaurant;
             }
