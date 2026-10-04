@@ -42,7 +42,7 @@ class PublicPageController extends Controller
             'story' => [
                 'eyebrow' => 'داستان',
                 'title' => 'گیلاس، از نگاه خودش.',
-                'copy' => $restaurant->description ?: 'یک خانه کوچک با طعم‌های جدی، حال خوب و جزئیات دوست‌داشتنی.',
+                'copy' => $restaurant->description ?: 'یک کافه کوچک با طعم‌های جدی، حال خوب و جزئیات دوست‌داشتنی.',
                 'action' => route('menu.index'),
                 'action_label' => 'کشف منو',
             ],
