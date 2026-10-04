@@ -44,6 +44,11 @@
         ];
     })->values()->all();
 
+    $initialCategory = filled($selectedSlug)
+        ? ($menu->firstWhere('slug', $selectedSlug) ?: $menu->first())
+        : $menu->first();
+    $initialItem = $initialCategory?->items->first();
+
     $tableToken = request()->cookie('gilas_table_token');
     $orderUrl = $tableToken
         ? route('table.orders.store', $tableToken)
@@ -55,7 +60,9 @@
      class="public-menu-shell"
      data-order-url="{{ $orderUrl }}"
      data-table-token="{{ $tableToken ?: '' }}"
-     data-currency="{{ $restaurant->currency }}">
+     data-currency="{{ $restaurant->currency }}"
+     data-initial-category="{{ $initialCategory?->id }}"
+     data-initial-item="{{ $initialItem?->id }}">
 
     <header class="public-menu-header">
         <div class="ui-shell public-menu-header__inner">
@@ -72,9 +79,9 @@
             <div class="menu-breadcrumb" aria-live="polite">
                 <span>منو</span>
                 <b>/</b>
-                <strong data-current-category>{{ $menu->first()?->name ?: 'انتخاب' }}</strong>
+                <strong data-current-category>{{ $initialCategory?->name ?: 'انتخاب' }}</strong>
                 <b>/</b>
-                <span data-current-item>{{ $menu->first()?->items->first()?->name ?: '—' }}</span>
+                <span data-current-item>{{ $initialItem?->name ?: '—' }}</span>
             </div>
 
             <button type="button" class="public-menu-header__cart" data-open-cart aria-label="باز کردن سبد سفارش">
@@ -128,7 +135,7 @@
                         <div class="menu-focus__grain" aria-hidden="true"></div>
 
                         <div class="menu-focus__topline">
-                            <span data-focus-category>{{ $menu->first()->name }}</span>
+                            <span data-focus-category>{{ $initialCategory?->name }}</span>
                             <span data-focus-state>موجود</span>
                         </div>
 
@@ -137,13 +144,13 @@
                             <div class="menu-focus__media">
                                 <img data-focus-image
                                      src="{{ $menu->first()->items->first()->image_path ? IlluminateSupportFacadesStorage::url($menu->first()->items->first()->image_path) : '' }}"
-                                     alt="{{ $menu->first()->items->first()->name }}"
+                                     alt="{{ $initialItem?->name ?: '' }}"
                                      width="900"
                                      height="900"
                                      decoding="async"
                                      fetchpriority="high"
                                      @if(!$menu->first()->items->first()->image_path) hidden @endif>
-                                <div data-focus-fallback class="menu-focus__fallback" @if($menu->first()->items->first()->image_path) hidden @endif aria-hidden="true">گ</div>
+                                <div data-focus-fallback class="menu-focus__fallback" @if(!$initialItem?->image_path) hidden @endif aria-hidden="true">گ</div>
                             </div>
                         </div>
 
@@ -154,12 +161,12 @@
                                     <h2 data-focus-name>{{ $menu->first()->items->first()->name }}</h2>
                                 </div>
                                 <strong class="menu-focus__price">
-                                    <span data-focus-price>{{ number_format((int) $menu->first()->items->first()->price) }}</span>
+                                    <span data-focus-price>{{ number_format((int) ($initialItem?->price ?? 0)) }}</span>
                                     {{ $restaurant->currency }}
                                 </strong>
                             </div>
 
-                            <p data-focus-description>{{ $menu->first()->items->first()->description ?: 'توضیحات این آیتم را از منوی اصلی دنبال کن.' }}</p>
+                            <p data-focus-description>{{ $initialItem?->description ?: 'توضیحات این آیتم را از منوی اصلی دنبال کن.' }}</p>
 
                             <div class="menu-focus__actions">
                                 <button type="button" class="menu-primary-action" data-focus-add>
@@ -176,11 +183,11 @@
                     <aside class="menu-rail menu-rail--items" aria-label="آیتم‌های دسته انتخاب‌شده">
                         <div class="menu-rail__heading">
                             <span>02</span>
-                            <strong data-items-heading>{{ $menu->first()->name }}</strong>
+                            <strong data-items-heading>{{ $initialCategory?->name }}</strong>
                         </div>
 
                         <div class="menu-item-list" data-item-list>
-                            @foreach($menu->first()->items as $item)
+                            @foreach($initialCategory?->items ?? collect() as $item)
                                 <button type="button"
                                         class="menu-item-button {{ $loop->first ? 'is-active' : '' }}"
                                         data-item-select="{{ $item->id }}"
