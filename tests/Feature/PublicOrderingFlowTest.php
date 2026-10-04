@@ -87,6 +87,33 @@ class PublicOrderingFlowTest extends TestCase
         $this->assertDatabaseCount('orders', 1);
     }
 
+    public function test_idempotency_key_cannot_switch_payment_method(): void
+    {
+        [$restaurant, $item] = $this->catalog();
+
+        $payload = [
+            'order_type' => OrderType::Pickup->value,
+            'payment_method' => PaymentMethod::Online->value,
+            'customer_name' => 'مشتری تست',
+            'phone' => '09120001111',
+            'items' => [[
+                'menu_item_id' => $item->id,
+                'quantity' => 1,
+            ]],
+        ];
+
+        $this->withHeader('Idempotency-Key', 'public-payment-idempotency-001')
+            ->postJson(route('customer.orders.store'), $payload)
+            ->assertCreated();
+
+        $payload['payment_method'] = PaymentMethod::Cashier->value;
+
+        $this->withHeader('Idempotency-Key', 'public-payment-idempotency-001')
+            ->postJson(route('customer.orders.store'), $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('idempotency_key');
+    }
+
     public function test_qr_order_accepts_cashier_or_online_payment_and_persists_one_payment(): void
     {
         [$restaurant, $item] = $this->catalog();
