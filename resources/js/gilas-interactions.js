@@ -19,58 +19,68 @@ function initHoneycomb() {
         items = [];
     }
 
-    const fallback = {
-        title: 'گیلاس',
-        text: 'مسیرت را از همین‌جا شروع کن.',
-        cta: 'ورود به منو',
-        url: '/menu',
-        icon: '🍒',
-    };
-
+    const categories = items.filter(item => item.type === 'category');
+    const guides = items.filter(item => item.type === 'guide');
     let activeIndex = 0;
     let rippleRunning = false;
+    let guideTimer = null;
 
-    const getItem = index => items[index % Math.max(items.length, 1)] || fallback;
+    const fallback = {
+        title:'گیلاس',
+        text:'این سلول بخشی از ریتم تعاملی Landing است.',
+        cta:'راهنما',
+        url:'/menu',
+        type:'decorative',
+    };
 
-    const activate = (index) => {
-        activeIndex = index;
+    const itemFor = (hex) => {
+        const type = hex.dataset.honeyType;
+        const slug = hex.dataset.honeyTarget;
 
-        hexagons.forEach((hex, i) => {
-            const active = i === index;
-            hex.classList.toggle('is-active', active);
-            hex.setAttribute('aria-current', active ? 'true' : 'false');
-        });
+        if (type === 'category') {
+            return categories.find(item => item.slug === slug) || fallback;
+        }
 
-        const item = getItem(index);
+        if (type === 'guide') {
+            const title = hex.getAttribute('aria-label');
+            return guides.find(item => item.title === title) || guides[0] || fallback;
+        }
+
+        return fallback;
+    };
+
+    const setDetail = (item) => {
         if (!detail || !title || !text || !action) return;
 
         title.textContent = item.title;
         text.textContent = item.text;
-        action.textContent = item.cta;
-        if (action instanceof HTMLAnchorElement) {
-            action.href = item.url || fallback.url;
-        }
-
+        action.textContent = item.cta || 'شروع';
+        action.href = item.url || '#';
         detail.classList.remove('is-visible');
         requestAnimationFrame(() => detail.classList.add('is-visible'));
     };
 
-    const ripple = (target) => {
-        if (rippleRunning) return;
-        rippleRunning = true;
+    const activate = (index, item = itemFor(hexagons[index])) => {
+        activeIndex = index;
+        hexagons.forEach((hex, i) => hex.classList.toggle('is-active', i === index));
+        setDetail(item);
+    };
 
-        const targetRect = target.getBoundingClientRect();
+    const ripple = (target) => {
+        if (rippleRunning || reduceMotion) return;
+
+        rippleRunning = true;
+        const targetIndex = Number(target.dataset.honeyIndex || 0);
+
         const ordered = hexagons
-            .map(element => {
-                const rect = element.getBoundingClientRect();
-                return {
-                    element,
-                    distance: Math.hypot(rect.x - targetRect.x, rect.y - targetRect.y),
-                };
-            })
+            .map((element, index) => ({
+                element,
+                distance: Math.abs(index - targetIndex),
+            }))
             .sort((a, b) => a.distance - b.distance);
 
         const maxDistance = ordered.at(-1)?.distance || 1;
+
         ordered.forEach(({ element, distance }) => {
             element.style.setProperty('--ripple-factor', String((distance * 100) / maxDistance));
         });
@@ -88,24 +98,83 @@ function initHoneycomb() {
             container.classList.remove('show-ripple');
             ordered.forEach(({ element }) => element.style.removeProperty('--ripple-factor'));
             rippleRunning = false;
-        }, { once: true });
+        }, { once:true });
+    };
+
+    const runGuide = (startHex) => {
+        if (guideTimer) window.clearTimeout(guideTimer);
+
+        const guideHexes = hexagons.filter(hex => hex.dataset.honeyType === 'guide');
+        const startTitle = startHex?.getAttribute('aria-label');
+        let step = Math.max(0, guides.findIndex(item => item.title === startTitle));
+
+        const play = () => {
+            const current = guides[step % Math.max(guides.length, 1)] || fallback;
+            const target = guideHexes[step % Math.max(guideHexes.length, 1)] || startHex;
+
+            if (!target) return;
+
+            hexagons.forEach(hex => hex.classList.remove('is-active'));
+            target.classList.add('is-active');
+            setDetail(current);
+            ripple(target);
+
+            if (step >= guides.length - 1) {
+                guideTimer = window.setTimeout(() => {
+                    hexagons.forEach(hex => hex.classList.remove('is-active'));
+                    activate(0);
+                }, reduceMotion ? 800 : 2200);
+                return;
+            }
+
+            step += 1;
+            guideTimer = window.setTimeout(play, reduceMotion ? 700 : 1500);
+        };
+
+        play();
     };
 
     hexagons.forEach((hexagon, index) => {
         hexagon.addEventListener('click', () => {
-            const item = getItem(index);
+            const item = itemFor(hexagon);
 
-            activate(index);
+            if (hexagon.dataset.honeyType === 'guide') {
+                runGuide(hexagon);
+                return;
+            }
+
+            if (hexagon.dataset.honeyType === 'decorative') {
+                activate(index, {
+                    title:'یک لحظه مکث',
+                    text:'همه سلول‌ها لینک نیستند؛ بعضی‌ها برای حرکت، ریتم و حس خود Landing هستند.',
+                    cta:'راهنما',
+                    type:'guide',
+                });
+                ripple(hexagon);
+                return;
+            }
+
+            activate(index, item);
             ripple(hexagon);
 
             if (item.url) {
-                window.setTimeout(() => {
-                    window.location.assign(item.url);
-                }, reduceMotion ? 0 : 180);
+                window.setTimeout(() => window.location.assign(item.url), reduceMotion ? 0 : 220);
             }
         });
-        hexagon.addEventListener('mouseenter', () => activate(index));
-        hexagon.addEventListener('focus', () => activate(index));
+
+        hexagon.addEventListener('mouseenter', () => {
+            if (hexagon.dataset.honeyType !== 'decorative') activate(index);
+        });
+
+        hexagon.addEventListener('focus', () => {
+            if (hexagon.dataset.honeyType !== 'decorative') activate(index);
+        });
+    });
+
+    action?.addEventListener('click', event => {
+        if (action.getAttribute('href') !== '#') return;
+        event.preventDefault();
+        runGuide(hexagons[activeIndex]);
     });
 
     switchButton?.addEventListener('click', () => {
@@ -118,7 +187,7 @@ function initHoneycomb() {
     activate(activeIndex);
 
     if (!reduceMotion && hexagons[0]) {
-        setTimeout(() => ripple(hexagons[0]), 500);
+        window.setTimeout(() => ripple(hexagons[0]), 450);
     }
 }
 
