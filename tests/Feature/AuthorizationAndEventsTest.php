@@ -85,6 +85,34 @@ class AuthorizationAndEventsTest extends TestCase
         $this->assertFalse($access->can($waiter, $restaurant, RestaurantPermission::ManageSettings));
     }
 
+    public function test_repeated_permission_checks_use_one_membership_query(): void
+    {
+        $restaurant = Restaurant::create([
+            'name' => 'Gilas',
+            'slug' => 'gilas-permission-cache',
+        ]);
+
+        $cashier = User::factory()->create();
+        $restaurant->users()->attach($cashier->id, [
+            'role' => RestaurantUserRole::Cashier->value,
+            'is_active' => true,
+        ]);
+
+        $queries = 0;
+        \Illuminate\Support\Facades\DB::listen(function ($query) use (&$queries): void {
+            if (str_starts_with(strtolower(trim($query->sql)), 'select')) {
+                $queries++;
+            }
+        });
+
+        $access = app(RestaurantAccessService::class);
+
+        $this->assertTrue($access->can($cashier, $restaurant, RestaurantPermission::ViewOrders));
+        $this->assertTrue($access->can($cashier, $restaurant, RestaurantPermission::ManagePayments));
+
+        $this->assertSame(1, $queries);
+    }
+
     public function test_order_created_listener_notifies_only_relevant_active_staff(): void
     {
         Notification::fake();
