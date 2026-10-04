@@ -25,23 +25,23 @@
             let sectionVisible = 0;
 
             section.querySelectorAll('[data-public-card]').forEach(card => {
-                const haystack = normalize(card.dataset.search);
-                const match = !query || haystack.includes(query);
+                const match = !query || normalize(card.dataset.search).includes(query);
                 card.hidden = !match;
                 if (match) sectionVisible++;
             });
 
             section.hidden = sectionVisible === 0;
+
             const count = section.querySelector('[data-category-count]');
             if (count) {
                 count.textContent = toFa(sectionVisible) + ' انتخاب';
             }
+
             visible += sectionVisible;
         });
 
         filters.forEach(filter => {
-            const slug = filter.dataset.publicCategory;
-            const active = !query && slug === (root.dataset.selectedCategory || 'all');
+            const active = !query && filter.dataset.publicCategory === (root.dataset.selectedCategory || 'all');
             filter.classList.toggle('is-active', active);
             filter.setAttribute('aria-current', active ? 'page' : 'false');
         });
@@ -62,10 +62,13 @@
             const slug = filter.dataset.publicCategory;
 
             if (slug === 'all') {
+                if (!hasFullMenu) return;
+
                 event.preventDefault();
+                root.dataset.selectedCategory = 'all';
                 if (search) search.value = '';
-                window.history.replaceState(null, '', filter.getAttribute('href') || '/menu');
                 apply();
+                window.history.replaceState(null, '', filter.getAttribute('href') || '/menu');
                 window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
                 return;
             }
@@ -74,19 +77,21 @@
 
             event.preventDefault();
 
-                const target = root.querySelector('[data-public-section="' + slug + '"]');
-                filters.forEach(node => {
-                    const active = node === filter;
-                    node.classList.toggle('is-active', active);
-                    node.setAttribute('aria-current', active ? 'page' : 'false');
-                });
+            const target = root.querySelector('[data-public-section="' + slug + '"]');
+            root.dataset.selectedCategory = slug;
 
-                target?.scrollIntoView({
-                    behavior: reducedMotion ? 'auto' : 'smooth',
-                    block: 'start',
-                });
-                window.history.replaceState(null, '', filter.getAttribute('href') || '/menu');
-            }
+            filters.forEach(node => {
+                const active = node === filter;
+                node.classList.toggle('is-active', active);
+                node.setAttribute('aria-current', active ? 'page' : 'false');
+            });
+
+            target?.scrollIntoView({
+                behavior: reducedMotion ? 'auto' : 'smooth',
+                block: 'start',
+            });
+
+            window.history.replaceState(null, '', filter.getAttribute('href') || '/menu');
         });
     });
 
@@ -95,6 +100,7 @@
     clearButton?.addEventListener('click', () => {
         if (!search) return;
         search.value = '';
+        root.dataset.selectedCategory = 'all';
         apply();
         search.focus({ preventScroll: true });
     });
