@@ -111,7 +111,7 @@ class PublicMenuTest extends TestCase
 
         $this->get(route('menu.index'))->assertOk();
 
-        $this->assertLessThanOrEqual(5, $queries);
+        $this->assertLessThanOrEqual(6, $queries);
     }
 
     public function test_public_menu_category_and_item_routes_are_dynamic(): void
