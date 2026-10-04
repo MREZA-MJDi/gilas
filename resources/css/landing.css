@@ -42,8 +42,8 @@
         z-index:-1;
         pointer-events:none;
         background:
-            radial-gradient(circle at 50% 58%,transparent 54%,rgba(45,33,27,.28) 100%),
-            linear-gradient(to top,rgba(45,33,27,.2) 62%,transparent),
+            radial-gradient(circle at 50% 58%,transparent 54%,rgba(0,0,0,.38) 100%),
+            linear-gradient(to top,rgba(0,0,0,.26) 62%,transparent),
             url("https://assets.codepen.io/907471/vision-pro-palm.jpg") 45% center/cover no-repeat;
         opacity:1;
         filter:blur(.5rem);
@@ -63,9 +63,8 @@
         z-index:-1;
         pointer-events:none;
         background:
-            linear-gradient(135deg,rgba(245,238,228,.08),transparent 42%),
-            repeating-linear-gradient(90deg,transparent 0 79px,rgba(245,238,228,.012) 80px),
-            repeating-linear-gradient(0deg,transparent 0 79px,rgba(245,238,228,.008) 80px);
+            repeating-linear-gradient(90deg,transparent 0 79px,rgba(255,255,255,.012) 80px),
+            repeating-linear-gradient(0deg,transparent 0 79px,rgba(255,255,255,.008) 80px);
         mask-image:radial-gradient(circle at center,black 15%,transparent 78%);
     }
 
