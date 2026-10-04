@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\OrderStatus;
-use App\Enums\RestaurantPermission;
 use App\Http\Controllers\Controller;
 use App\Models\Restaurant;
 use Illuminate\Support\Carbon;
@@ -149,7 +148,6 @@ class DashboardController extends Controller
             'kitchenQueue' => $kitchenQueue,
             'dailySales' => $dailySales,
             'maxDailyRevenue' => $maxDailyRevenue,
-            'permission' => RestaurantPermission::ViewDashboard,
         ]);
     }
 }
