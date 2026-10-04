@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 use App\Models\Restaurant;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -35,10 +37,12 @@ class DashboardController extends Controller
             ->where('status', '!=', OrderStatus::Cancelled->value)
             ->sum('total');
 
-        $paidToday = (int) $restaurant->orders()
-            ->whereDate('created_at', $today)
-            ->whereHas('payment', fn ($query) => $query->where('status', 'paid'))
-            ->sum('total');
+        $paidToday = (int) Payment::query()
+            ->where('status', PaymentStatus::Paid)
+            ->whereHas('order', fn ($query) => $query
+                ->where('restaurant_id', $restaurant->id)
+                ->whereDate('created_at', $today))
+            ->sum('amount');
 
         $openOrders = $restaurant->orders()
             ->whereIn('status', $openStatuses)
