@@ -139,7 +139,7 @@
                                     <button type="button" data-open-item="{{ $item->id }}" class="block w-full text-right">
                                         <div class="relative aspect-[16/10] overflow-hidden bg-[#27201c]">
                                             @if($item->image_path)
-                                                <img src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}" alt="{{ $item->name }}" loading="lazy" decoding="async" width="800" height="800"
+                                                <img src="{{ $item->image_url }}" alt="{{ $item->name }}" loading="lazy" decoding="async" width="800" height="800"
                                                      class="size-full object-contain p-[7%] transition duration-700 group-hover:scale-[1.035]">
                                             @else
                                                 <div class="grid size-full place-items-center bg-[radial-gradient(circle_at_30%_20%,rgba(244,114,182,.16),transparent_36%),linear-gradient(135deg,#2b211d,#171311)]"><span class="text-5xl font-bold text-white/10">گ</span></div>
