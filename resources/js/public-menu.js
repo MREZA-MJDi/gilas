@@ -18,9 +18,13 @@
     const $ = selector => root.querySelector(selector);
     const all = selector => [...root.querySelectorAll(selector)];
 
+    const initialCategoryId = root.dataset.initialCategory || categories[0]?.id || null;
+    const initialCategory = categoryMap.get(String(initialCategoryId)) || categories[0];
+    const initialItemId = root.dataset.initialItem || initialCategory?.items?.[0]?.id || null;
+
     const state = {
-        categoryId: categories[0]?.id ?? null,
-        itemId: categories[0]?.items?.[0]?.id ?? null,
+        categoryId: initialCategory?.id ?? null,
+        itemId: initialItemId,
         cart: loadCart(),
         dialogItem: null,
         dialogQuantity: 1,
