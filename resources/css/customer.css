@@ -883,6 +883,34 @@
         text-align: center;
     }
 
+    .menu-no-js-links{
+        display:grid;
+        gap:10px;
+        margin-top:18px;
+        padding:14px 16px;
+        border:1px solid var(--customer-line);
+        border-radius:20px;
+        color:var(--customer-muted);
+        background:rgba(244,236,228,.018);
+        font-size:9px;
+    }
+
+    .menu-no-js-links__group{
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:7px;
+    }
+
+    .menu-no-js-links strong{
+        color:var(--gilas-cream);
+    }
+
+    .menu-no-js-links a{
+        color:var(--gilas-cherry);
+        text-decoration:none;
+    }
+
     .public-menu-empty h2 {
         margin: 8px 0 0;
         color: var(--gilas-cream);
