@@ -53,7 +53,7 @@ class TableOrderingController extends Controller
                 'order_number' => $order->order_number,
                 'status' => $order->status->value,
                 'total' => $order->total,
-                'payment_method' => $order->payment?->method,
+                'payment_method' => $order->payment?->method?->value,
                 'payment_status' => $order->payment?->status?->value,
                 'public_token' => $order->public_token,
                 'tracking_url' => route('customer.orders.show', $order->public_token),
