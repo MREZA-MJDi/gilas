@@ -35,6 +35,7 @@ class HomeExperienceTest extends TestCase
             ->assertSee(route('public.location'), false)
             ->assertSee(route('public.story'), false);
 
+        $response->assertDontSee('GILAS');
         $response->assertDontSee('Today at');
         $response->assertDontSee('چیزهایی که امروز');
         $response->assertDontSee('انتخاب‌های امروز');
