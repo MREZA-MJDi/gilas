@@ -221,6 +221,18 @@
 
                     <div class="ui-scroll-x menu-related__list" data-related-list></div>
                 </section>
+
+                <noscript class="menu-no-js-links">
+                    <span>مرور مستقیم منو:</span>
+                    @foreach($menu as $fallbackCategory)
+                        <span class="menu-no-js-links__group">
+                            <strong>{{ $fallbackCategory->name }}</strong>
+                            @foreach($fallbackCategory->items as $fallbackItem)
+                                <a href="{{ route('menu.item', ['slug' => $fallbackItem->slug]) }}">{{ $fallbackItem->name }}</a>
+                            @endforeach
+                        </span>
+                    @endforeach
+                </noscript>
             @else
                 <div class="public-menu-empty">
                     <span class="eyebrow">منو</span>
