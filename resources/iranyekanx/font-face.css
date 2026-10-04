@@ -1,0 +1,13 @@
+/**
+ * IRANYekanX Pro v4.0
+ * Copyright: Commercial/Proprietary — fontiran.com
+ * License: VM6VH9
+ */
+@font-face {
+  font-family: 'IRANYekanX Variable';
+  src: url('IRANYekanXVF.woff2') format('woff2 supports variations'),
+       url('IRANYekanXVF.woff2') format('woff2-variations');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
