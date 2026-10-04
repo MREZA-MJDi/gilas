@@ -167,6 +167,7 @@ class CustomerOrderingFlowTest extends TestCase
         $qr = app(TableQrCodeService::class)->issue($table);
 
         $payload = [
+            'payment_method' => 'cashier',
             'items' => [[
                 'menu_item_id' => $item->id,
                 'quantity' => 2,
