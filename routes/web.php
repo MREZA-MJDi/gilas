@@ -59,8 +59,10 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/admin/{restaurant:slug}', DashboardController::class)
+        ->middleware('can:view,restaurant')
         ->name('admin.dashboard');
 
     Route::post('/admin/{restaurant:slug}/payments/{payment}/cashier-paid', [PaymentController::class, 'markCashierPaid'])
+        ->middleware('can:markCashierPaid,payment')
         ->name('admin.payments.cashier-paid');
 });
