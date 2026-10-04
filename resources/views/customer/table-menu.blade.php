@@ -223,6 +223,26 @@
                     <p class="text-base font-semibold text-white">سبدت خالیه</p>
                     <p class="mt-1 text-sm text-stone-500">از منو یک غذا انتخاب کن.</p>
                 </div>
+                <section class="mt-5 rounded-3xl border border-white/8 bg-white/[0.035] p-4" aria-labelledby="table-payment-heading">
+                    <p id="table-payment-heading" class="text-sm font-medium text-stone-200">چطور پرداخت می‌کنی؟</p>
+                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                        <label class="table-payment-choice is-selected">
+                            <input type="radio" name="payment-method" value="online" checked>
+                            <span>
+                                <strong>پرداخت آنلاین</strong>
+                                <small>پرداخت امن قبل از تسویه سفارش</small>
+                            </span>
+                        </label>
+                        <label class="table-payment-choice">
+                            <input type="radio" name="payment-method" value="cashier">
+                            <span>
+                                <strong>پرداخت در صندوق</strong>
+                                <small>تسویه هنگام خروج از کافه</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
                 <div class="mt-5 rounded-3xl border border-white/8 bg-white/[0.035] p-4">
                     <label for="customer-note" class="text-sm font-medium text-stone-200">یادداشت برای آشپزخانه</label>
                     <textarea id="customer-note" rows="3" maxlength="500" placeholder="مثلاً بدون پیاز یا نکته‌ای که لازم است بدانیم..."
