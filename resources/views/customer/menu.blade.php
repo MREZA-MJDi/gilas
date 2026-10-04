@@ -1,23 +1,67 @@
 @extends('layouts.customer')
 
 @section('title', $restaurant->name . ' — منو')
-@section('description', 'منوی آنلاین ' . $restaurant->name)
+@section('description', 'منوی دیجیتال ' . $restaurant->name)
 @section('body_class', 'public-menu-page')
+
+@php
+    $menuData = $menu->map(function ($category) {
+        return [
+            'id' => $category->id,
+            'slug' => $category->slug,
+            'name' => $category->name,
+            'items' => $category->items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'slug' => $item->slug,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                    'price' => (int) $item->price,
+                    'image' => $item->image_path
+                        ? \Illuminate\Support\Facades\Storage::url($item->image_path)
+                        : null,
+                    'variants' => $item->variants->map(fn ($variant) => [
+                        'id' => $variant->id,
+                        'name' => $variant->name,
+                        'price' => (int) $variant->price,
+                    ])->values()->all(),
+                    'options' => $item->options->map(function ($option) {
+                        return [
+                            'id' => $option->id,
+                            'name' => $option->name,
+                            'required' => (bool) $option->is_required,
+                            'min' => (int) $option->min_select,
+                            'max' => (int) $option->max_select,
+                            'values' => $option->values->map(fn ($value) => [
+                                'id' => $value->id,
+                                'name' => $value->name,
+                                'priceDelta' => (int) $value->price_delta,
+                            ])->values()->all(),
+                        ];
+                    })->values()->all(),
+                ];
+            })->values()->all(),
+        ];
+    })->values()->all();
+
+    $tableToken = request()->cookie('gilas_table_token');
+    $orderUrl = $tableToken
+        ? route('table.orders.store', $tableToken)
+        : '';
+@endphp
 
 @section('content')
 <div id="public-menu"
      class="public-menu-shell"
-     data-selected-category="{{ $selectedSlug ?: 'all' }}"
-     data-full-menu="{{ blank($selectedSlug) ? '1' : '0' }}">
+     data-order-url="{{ $orderUrl }}"
+     data-table-token="{{ $tableToken ?: '' }}"
+     data-currency="{{ $restaurant->currency }}">
+
     <header class="public-menu-header">
         <div class="ui-shell public-menu-header__inner">
             <a href="{{ route('home') }}" class="brand-lockup" aria-label="بازگشت به گیلاس">
-                <span class="brand-lockup__mark">
-                    @if($restaurant->logo_path)
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($restaurant->logo_path) }}" alt="" width="44" height="44" decoding="async">
-                    @else
-                        <span aria-hidden="true">گ</span>
-                    @endif
+                <span class="brand-lockup__mark" aria-hidden="true">
+                    <img src="{{ asset('favicon.svg') }}" alt="" width="44" height="44" decoding="async">
                 </span>
                 <span class="brand-lockup__text">
                     <strong>{{ $restaurant->name }}</strong>
@@ -25,164 +69,227 @@
                 </span>
             </a>
 
-            <a href="{{ route('public.reservation') }}" class="public-menu-header__action">رزرو میز</a>
+            <div class="menu-breadcrumb" aria-live="polite">
+                <span>منو</span>
+                <b>/</b>
+                <strong data-current-category>{{ $menu->first()?->name ?: 'انتخاب' }}</strong>
+                <b>/</b>
+                <span data-current-item>{{ $menu->first()?->items->first()?->name ?: '—' }}</span>
+            </div>
+
+            <button type="button" class="public-menu-header__cart" data-open-cart aria-label="باز کردن سبد سفارش">
+                <span class="public-menu-header__cart-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M3.5 4.5h2l1.5 9.1a1.8 1.8 0 0 0 1.8 1.5h8.8a1.8 1.8 0 0 0 1.7-1.3L21 7H7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="10" cy="19" r="1.4" fill="currentColor"/>
+                        <circle cx="18" cy="19" r="1.4" fill="currentColor"/>
+                    </svg>
+                    <span data-header-cart-count>۰</span>
+                </span>
+                <span>سبد سفارش</span>
+            </button>
         </div>
     </header>
 
     <main class="ui-shell public-menu">
-        <section class="public-menu__hero">
-            <div class="public-menu__hero-copy">
-                <span class="eyebrow">منوی گیلاس</span>
-                <h1>هر چیزی که<br><strong>دلت می‌خواد.</strong></h1>
-                <p>{{ $restaurant->description ?: 'منو، قیمت و موجودی واقعی را همین‌جا ببین و انتخابت را شروع کن.' }}</p>
-
-                <label class="public-menu__search">
-                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-                        <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/>
-                        <path d="m16 16 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                    </svg>
-                    <input
-                        type="search"
-                        inputmode="search"
-                        autocomplete="off"
-                        spellcheck="false"
-                        placeholder="دنبال چی می‌گردی؟"
-                        aria-label="جست‌وجو در منو"
-                        data-public-search>
-                </label>
-                <p class="public-menu__search-status" data-search-status aria-live="polite"></p>
+        <section class="menu-explorer" aria-label="منوی تعاملی گیلاس">
+            <div class="menu-explorer__intro">
+                <div>
+                    <span class="eyebrow">DIGITAL MENU</span>
+                    <h1>از غذا شروع کن،<br><strong>بقیه‌اش خودش میاد.</strong></h1>
+                </div>
+                <p>{{ $restaurant->description ?: 'دسته را انتخاب کن، غذای موردنظرت را ببین و بدون خروج از همین صفحه انتخابش کن.' }}</p>
             </div>
 
-            @if($restaurant->cover_image_path)
-                <div class="public-menu__hero-media">
-                    <img src="{{ \Illuminate\Support\Facades\Storage::url($restaurant->cover_image_path) }}"
-                         alt="{{ $restaurant->name }}"
-                         width="960"
-                         height="720"
-                         loading="eager"
-                         decoding="async">
-                    <span aria-hidden="true">گیلاس</span>
-                </div>
-            @endif
-        </section>
-
-        @if($featuredItems->isNotEmpty())
-            <section class="public-menu__featured" aria-labelledby="featured-heading">
-                <div class="public-menu__section-head">
-                    <div>
-                        <span class="eyebrow">انتخاب‌های سریع</span>
-                        <h2 id="featured-heading">پیشنهاد امروز</h2>
-                    </div>
-                    <span class="public-menu__section-note">از منوی واقعی</span>
-                </div>
-
-                <div class="ui-scroll-x public-menu__featured-grid">
-                    @foreach($featuredItems as $entry)
-                        @php($featuredItem = $entry['item'])
-                        @php($featuredCategory = $entry['category'])
-                        <a href="{{ route('menu.item', ['slug' => $featuredItem->slug]) }}" class="public-featured-card">
-                            <div class="public-featured-card__media">
-                                @if($featuredItem->image_path)
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($featuredItem->image_path) }}"
-                                         alt="{{ $featuredItem->name }}"
-                                         width="640"
-                                         height="640"
-                                         loading="lazy"
-                                         decoding="async">
-                                @else
-                                    <span aria-hidden="true">گ</span>
-                                @endif
-                            </div>
-                            <div class="public-featured-card__body">
-                                <span>{{ $featuredCategory->name }}</span>
-                                <strong>{{ $featuredItem->name }}</strong>
-                                <b>{{ number_format((int) $featuredItem->price) }} {{ $restaurant->currency }}</b>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-            </section>
-        @endif
-
-        <nav class="public-menu__filters" aria-label="دسته‌های منو">
-            <a href="{{ route('menu.index') }}"
-               class="{{ blank($selectedSlug) ? 'is-active' : '' }}"
-               data-public-category="all">
-                همه
-            </a>
-            @foreach($menu as $category)
-                <a href="{{ route('menu.category', ['slug' => $category->slug]) }}"
-                   class="{{ $selectedSlug === $category->slug ? 'is-active' : '' }}"
-                   data-public-category="{{ $category->slug }}">
-                    {{ $category->name }}
-                </a>
-            @endforeach
-        </nav>
-
-        <div class="public-menu__sections">
-            @forelse($menu as $category)
-                <section class="public-menu-category"
-                         id="category-{{ $category->slug }}"
-                         data-public-section="{{ $category->slug }}">
-                    <div class="public-menu-category__heading">
-                        <div>
-                            <span class="eyebrow">دسته</span>
-                            <h2>{{ $category->name }}</h2>
+            @if($menu->isNotEmpty() && $menu->first()->items->isNotEmpty())
+                <div class="menu-explorer__layout">
+                    <aside class="menu-rail menu-rail--categories" aria-label="دسته‌های منو">
+                        <div class="menu-rail__heading">
+                            <span>01</span>
+                            <strong>دسته‌ها</strong>
                         </div>
-                        <span data-category-count>{{ $category->items->count() }} انتخاب</span>
-                    </div>
 
-                    <div class="public-product-grid">
-                        @foreach($category->items as $item)
-                            <article class="public-product-card"
-                                     data-public-card
-                                     data-search="{{ mb_strtolower(trim($item->name . ' ' . ($item->description ?? '')), 'UTF-8') }}">
-                                <a href="{{ route('menu.item', ['slug' => $item->slug]) }}" class="public-product-card__media">
-                                    @if($item->image_path)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}"
-                                             alt="{{ $item->name }}"
-                                             loading="lazy"
-                                             decoding="async"
-                                             width="800"
-                                             height="800">
-                                    @else
-                                        <span class="public-product-card__fallback" aria-hidden="true">گ</span>
-                                    @endif
-                                </a>
+                        <div class="menu-category-list" data-category-list>
+                            @foreach($menu as $index => $category)
+                                <button type="button"
+                                        class="menu-category-button {{ $index === 0 ? 'is-active' : '' }}"
+                                        data-category-select="{{ $category->id }}"
+                                        aria-pressed="{{ $index === 0 ? 'true' : 'false' }}">
+                                    <span class="menu-category-button__index">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                                    <span class="menu-category-button__name">{{ $category->name }}</span>
+                                    <span class="menu-category-button__arrow" aria-hidden="true">↙</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </aside>
 
-                                <div class="public-product-card__body">
-                                    <div class="public-product-card__main">
-                                        <span class="public-product-card__category">{{ $category->name }}</span>
-                                        <h3><a href="{{ route('menu.item', ['slug' => $item->slug]) }}">{{ $item->name }}</a></h3>
-                                        @if($item->description)
-                                            <p>{{ $item->description }}</p>
-                                        @endif
-                                    </div>
+                    <section class="menu-focus" aria-live="polite" aria-atomic="true">
+                        <div class="menu-focus__halo" aria-hidden="true"></div>
+                        <div class="menu-focus__grain" aria-hidden="true"></div>
 
-                                    <div class="public-product-card__footer">
-                                        <strong>{{ number_format((int) $item->price) }} {{ $restaurant->currency }}</strong>
-                                        <span class="public-product-card__open">دیدن جزئیات <b aria-hidden="true">↗</b></span>
-                                    </div>
+                        <div class="menu-focus__topline">
+                            <span data-focus-category>{{ $menu->first()->name }}</span>
+                            <span data-focus-state>موجود</span>
+                        </div>
+
+                        <div class="menu-focus__media-wrap">
+                            <div class="menu-focus__shadow" aria-hidden="true"></div>
+                            <div class="menu-focus__media">
+                                <img data-focus-image
+                                     src="{{ $menu->first()->items->first()->image_path ? IlluminateSupportFacadesStorage::url($menu->first()->items->first()->image_path) : '' }}"
+                                     alt="{{ $menu->first()->items->first()->name }}"
+                                     width="900"
+                                     height="900"
+                                     decoding="async"
+                                     fetchpriority="high"
+                                     @if(!$menu->first()->items->first()->image_path) hidden @endif>
+                                <div data-focus-fallback class="menu-focus__fallback" @if($menu->first()->items->first()->image_path) hidden @endif aria-hidden="true">گ</div>
+                            </div>
+                        </div>
+
+                        <div class="menu-focus__details">
+                            <div class="menu-focus__title-row">
+                                <div>
+                                    <span class="eyebrow">انتخاب فعلی</span>
+                                    <h2 data-focus-name>{{ $menu->first()->items->first()->name }}</h2>
                                 </div>
-                            </article>
-                        @endforeach
+                                <strong class="menu-focus__price">
+                                    <span data-focus-price>{{ number_format((int) $menu->first()->items->first()->price) }}</span>
+                                    {{ $restaurant->currency }}
+                                </strong>
+                            </div>
+
+                            <p data-focus-description>{{ $menu->first()->items->first()->description ?: 'توضیحات این آیتم را از منوی اصلی دنبال کن.' }}</p>
+
+                            <div class="menu-focus__actions">
+                                <button type="button" class="menu-primary-action" data-focus-add>
+                                    <span>افزودن به سفارش</span>
+                                    <b>+</b>
+                                </button>
+                                <button type="button" class="menu-secondary-action" data-focus-open-details>
+                                    جزئیات و انتخاب‌ها
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <aside class="menu-rail menu-rail--items" aria-label="آیتم‌های دسته انتخاب‌شده">
+                        <div class="menu-rail__heading">
+                            <span>02</span>
+                            <strong data-items-heading>{{ $menu->first()->name }}</strong>
+                        </div>
+
+                        <div class="menu-item-list" data-item-list>
+                            @foreach($menu->first()->items as $item)
+                                <button type="button"
+                                        class="menu-item-button {{ $loop->first ? 'is-active' : '' }}"
+                                        data-item-select="{{ $item->id }}"
+                                        aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
+                                    <span class="menu-item-button__thumb">
+                                        @if($item->image_path)
+                                            <img src="{{ IlluminateSupportFacadesStorage::url($item->image_path) }}" alt="" width="96" height="96" loading="lazy" decoding="async">
+                                        @else
+                                            <span>گ</span>
+                                        @endif
+                                    </span>
+                                    <span class="menu-item-button__copy">
+                                        <strong>{{ $item->name }}</strong>
+                                        <small>{{ number_format((int) $item->price) }} {{ $restaurant->currency }}</small>
+                                    </span>
+                                    <span class="menu-item-button__arrow" aria-hidden="true">↘</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </aside>
+                </div>
+
+                <section class="menu-related" aria-labelledby="related-heading">
+                    <div class="menu-related__heading">
+                        <div>
+                            <span class="eyebrow">03 / SUGGESTED</span>
+                            <h2 id="related-heading">کنارش چی می‌چسبه؟</h2>
+                        </div>
+                        <span>از باقی منو، مرتبط با انتخاب تو</span>
                     </div>
+
+                    <div class="ui-scroll-x menu-related__list" data-related-list></div>
                 </section>
-            @empty
+            @else
                 <div class="public-menu-empty">
                     <span class="eyebrow">منو</span>
                     <h2>فعلاً چیزی برای نمایش نداریم.</h2>
-                    <p>آیتم‌های فعال و موجود را از داشبورد وارد کن تا این صفحه به‌صورت خودکار به‌روز شود.</p>
+                    <p>آیتم‌های فعال و موجود را از داشبورد وارد کن تا این صفحه به‌صورت خودکار زنده شود.</p>
                 </div>
-            @endforelse
-        </div>
-
-        <div class="public-menu__search-empty" data-search-empty hidden>
-            <span class="eyebrow">جست‌وجو</span>
-            <h2>این یکی را پیدا نکردیم.</h2>
-            <p>اسم، توضیح یا دسته‌ی دیگری را امتحان کن.</p>
-            <button type="button" data-clear-search>پاک کردن جست‌وجو</button>
-        </div>
+            @endif
+        </section>
     </main>
 </div>
+
+<div id="public-menu-item-sheet"
+     class="menu-dialog"
+     hidden
+     aria-hidden="true">
+    <div class="menu-dialog__backdrop" data-close-menu-dialog></div>
+    <section class="menu-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="menu-dialog-title">
+        <div class="menu-dialog__header">
+            <div>
+                <span class="eyebrow">PERSONALIZE</span>
+                <h2 id="menu-dialog-title">انتخاب‌ها</h2>
+            </div>
+            <button type="button" class="menu-dialog__close" data-close-menu-dialog aria-label="بستن">×</button>
+        </div>
+        <div class="menu-dialog__content" data-dialog-content></div>
+    </section>
+</div>
+
+<div id="public-menu-cart"
+     class="menu-dialog menu-dialog--cart"
+     hidden
+     aria-hidden="true">
+    <div class="menu-dialog__backdrop" data-close-cart></div>
+    <section class="menu-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="public-cart-title">
+        <div class="menu-dialog__header">
+            <div>
+                <span class="eyebrow">ORDER</span>
+                <h2 id="public-cart-title">سبد سفارش</h2>
+            </div>
+            <button type="button" class="menu-dialog__close" data-close-cart aria-label="بستن">×</button>
+        </div>
+
+        <div class="menu-cart__content">
+            <div data-public-cart-items class="menu-cart__items"></div>
+
+            <div data-public-cart-empty class="menu-cart__empty">
+                <span aria-hidden="true">گ</span>
+                <strong>هنوز چیزی انتخاب نکردی.</strong>
+                <p>از دسته‌ها یا پیشنهادهای پایین شروع کن.</p>
+            </div>
+
+            <div class="menu-cart__note">
+                <label for="public-customer-note">یادداشت</label>
+                <textarea id="public-customer-note" rows="3" maxlength="500" placeholder="مثلاً بدون پیاز..."></textarea>
+            </div>
+
+            <div class="menu-cart__footer">
+                <div>
+                    <span>مجموع</span>
+                    <strong><span data-public-cart-total>۰</span> {{ $restaurant->currency }}</strong>
+                </div>
+                <button type="button" class="menu-primary-action" data-public-submit-order disabled>
+                    <span data-public-submit-label>ثبت سفارش</span>
+                    <span data-public-submit-spinner hidden>...</span>
+                </button>
+            </div>
+
+            <p class="menu-cart__hint" data-public-cart-hint></p>
+            <div class="menu-cart__alert" data-public-cart-alert hidden></div>
+        </div>
+    </section>
+</div>
+
+@unless(app()->environment('testing'))
+    <script>
+        window.GilasPublicMenu = @json($menuData);
+    </script>
+@endunless
 @endsection
