@@ -16,7 +16,6 @@
 
     <main class="landing-stage" aria-label="ورود به گیلاس">
         <div class="landing-copy">
-            <span>گیلاس</span>
             <h1>از همین‌جا<br><strong>شروع کن.</strong></h1>
         </div>
 
