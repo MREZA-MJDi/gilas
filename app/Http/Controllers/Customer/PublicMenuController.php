@@ -29,31 +29,19 @@ class PublicMenuController extends Controller
     {
         $restaurant = $this->primaryRestaurantOrFail();
         $menu = $this->catalog->forRestaurant($restaurant)->values();
-        $sourceMenu = $menu;
 
         $selectedSlug = is_string($categorySlug) ? trim($categorySlug) : null;
 
-        if ($selectedSlug !== null && $selectedSlug !== '') {
-            abort_unless($menu->contains(fn ($category) => $category->slug === $selectedSlug), 404);
-
-            $menu = $menu
-                ->filter(fn ($category) => $category->slug === $selectedSlug)
-                ->values();
+        if (filled($selectedSlug)) {
+            abort_unless(
+                $menu->contains(fn ($category) => $category->slug === $selectedSlug),
+                404
+            );
         }
-
-        $featuredItems = blank($selectedSlug)
-            ? $sourceMenu
-                ->flatMap(fn ($category) => $category->items->map(
-                    fn ($item) => ['item' => $item, 'category' => $category]
-                ))
-                ->take(4)
-                ->values()
-            : collect();
 
         return view('customer.menu', [
             'restaurant' => $restaurant,
             'menu' => $menu,
-            'featuredItems' => $featuredItems,
             'selectedSlug' => $selectedSlug,
         ]);
     }
