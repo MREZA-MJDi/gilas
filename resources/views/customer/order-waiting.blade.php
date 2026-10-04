@@ -1,5 +1,8 @@
 @extends('layouts.customer')
 
+@section('body_class', 'customer-order-waiting')
+@section('hide_footer', '1')
+
 @section('title', 'در انتظار آماده‌شدن سفارش — ' . $order->order_number)
 @section('description', 'پیگیری سفارش ' . $order->order_number . ' در گیلاس')
 
