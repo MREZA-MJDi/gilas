@@ -76,6 +76,44 @@ class PublicMenuTest extends TestCase
             ->assertDontSee('نباید دیده شود');
     }
 
+    public function test_public_menu_catalog_avoids_n_plus_one_queries(): void
+    {
+        $restaurant = $this->restaurant();
+
+        $category = MenuCategory::create([
+            'restaurant_id' => $restaurant->id,
+            'name' => 'برگرها',
+            'slug' => 'burgers-n-plus-one',
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        foreach (range(1, 3) as $index) {
+            MenuItem::create([
+                'restaurant_id' => $restaurant->id,
+                'menu_category_id' => $category->id,
+                'name' => 'برگر ' . $index,
+                'slug' => 'burger-' . $index,
+                'description' => 'تست',
+                'price' => 200000 + ($index * 10000),
+                'sort_order' => $index,
+                'is_active' => true,
+                'is_available' => true,
+            ]);
+        }
+
+        $queries = 0;
+        \Illuminate\Support\Facades\DB::listen(function ($query) use (&$queries): void {
+            if (str_starts_with(strtolower(trim($query->sql)), 'select')) {
+                $queries++;
+            }
+        });
+
+        $this->get(route('menu.index'))->assertOk();
+
+        $this->assertLessThanOrEqual(5, $queries);
+    }
+
     public function test_public_menu_category_and_item_routes_are_dynamic(): void
     {
         $restaurant = $this->restaurant();
