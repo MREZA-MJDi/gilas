@@ -1935,6 +1935,50 @@
         --customer-surface: #1c1720;
     }
 
+    .table-payment-choice{
+        display:flex;
+        min-width:0;
+        align-items:center;
+        gap:12px;
+        padding:13px 14px;
+        border:1px solid rgba(244,236,228,.09);
+        border-radius:16px;
+        color:var(--gilas-cream);
+        background:rgba(244,236,228,.018);
+        cursor:pointer;
+        transition:border-color .2s ease,background .2s ease,transform .2s ease;
+    }
+
+    .table-payment-choice:hover{
+        transform:translateY(-1px);
+        background:rgba(244,236,228,.04);
+    }
+
+    .table-payment-choice.is-selected{
+        border-color:color-mix(in srgb,var(--gilas-cherry),transparent 45%);
+        background:color-mix(in srgb,var(--gilas-cherry),transparent 92%);
+    }
+
+    .table-payment-choice input{
+        width:16px;
+        height:16px;
+        flex:none;
+        accent-color:var(--gilas-cherry);
+    }
+
+    .table-payment-choice strong,
+    .table-payment-choice small{
+        display:block;
+    }
+
+    .table-payment-choice strong{font-size:11px}
+    .table-payment-choice small{
+        margin-top:4px;
+        color:rgba(244,236,228,.42);
+        font-size:8px;
+        line-height:1.7;
+    }
+
     .customer-table-menu .gilas-site-footer,
     .customer-order-waiting .gilas-site-footer {
         display: none;
