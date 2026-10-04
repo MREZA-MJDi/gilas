@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Customer\OrderTrackingController;
 use App\Http\Controllers\Customer\PublicMenuController;
@@ -59,4 +60,7 @@ Route::middleware('auth')->group(function (): void {
 
     Route::get('/admin/{restaurant:slug}', DashboardController::class)
         ->name('admin.dashboard');
+
+    Route::post('/admin/{restaurant:slug}/payments/{payment}/cashier-paid', [PaymentController::class, 'markCashierPaid'])
+        ->name('admin.payments.cashier-paid');
 });
