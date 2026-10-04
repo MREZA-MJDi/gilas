@@ -5,7 +5,10 @@
 @section('body_class', 'public-menu-page')
 
 @section('content')
-<div id="public-menu" class="public-menu-shell">
+<div id="public-menu"
+     class="public-menu-shell"
+     data-selected-category="{{ $selectedSlug ?: 'all' }}"
+     data-full-menu="{{ blank($selectedSlug) ? '1' : '0' }}">
     <header class="public-menu-header">
         <div class="ui-shell public-menu-header__inner">
             <a href="{{ route('home') }}" class="brand-lockup" aria-label="بازگشت به گیلاس">
