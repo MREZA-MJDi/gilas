@@ -15,6 +15,7 @@
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const currency = root.dataset.currency || '';
     const orderUrl = root.dataset.orderUrl || '';
+    const cartStorageKey = 'gilas:public-cart:v1:' + (root.dataset.tableToken || 'guest');
     const $ = selector => document.querySelector(selector);
     const all = selector => [...document.querySelectorAll(selector)];
 
@@ -663,7 +664,7 @@
 
     function saveCart() {
         try {
-            localStorage.setItem('gilas:public-cart:v1', JSON.stringify(state.cart));
+            localStorage.setItem(cartStorageKey, JSON.stringify(state.cart));
         } catch (_) {
             // Storage can be disabled; the menu remains fully browsable.
         }
@@ -671,7 +672,7 @@
 
     function loadCart() {
         try {
-            const raw = JSON.parse(localStorage.getItem('gilas:public-cart:v1') || '[]');
+            const raw = JSON.parse(localStorage.getItem(cartStorageKey) || '[]');
             if (!Array.isArray(raw)) return [];
 
             return raw.map(line => {
