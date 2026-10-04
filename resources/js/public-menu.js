@@ -8,6 +8,7 @@
     const clearButton = root.querySelector('[data-clear-search]');
     const filters = [...root.querySelectorAll('[data-public-category]')];
     const sections = [...root.querySelectorAll('[data-public-section]')];
+    const hasFullMenu = root.dataset.fullMenu === '1';
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
     const normalize = value => String(value || '')
@@ -40,7 +41,7 @@
 
         filters.forEach(filter => {
             const slug = filter.dataset.publicCategory;
-            const active = slug === 'all' && !query;
+            const active = !query && slug === (root.dataset.selectedCategory || 'all');
             filter.classList.toggle('is-active', active);
             filter.setAttribute('aria-current', active ? 'page' : 'false');
         });
@@ -69,8 +70,9 @@
                 return;
             }
 
-            if (!search?.value.trim()) {
-                event.preventDefault();
+            if (!hasFullMenu || search?.value.trim()) return;
+
+            event.preventDefault();
 
                 const target = root.querySelector('[data-public-section="' + slug + '"]');
                 filters.forEach(node => {
