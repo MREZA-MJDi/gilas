@@ -143,7 +143,7 @@
                             <div class="menu-focus__shadow" aria-hidden="true"></div>
                             <div class="menu-focus__media">
                                 <img data-focus-image
-                                     src="{{ $initialItem->image_path ? IlluminateSupportFacadesStorage::url($initialItem->image_path) : '' }}"
+                                     src="{{ $initialItem->image_path ? \Illuminate\Support\Facades\Storage::url($initialItem->image_path) : '' }}"
                                      alt="{{ $initialItem?->name ?: '' }}"
                                      width="900"
                                      height="900"
@@ -194,7 +194,7 @@
                                         aria-pressed="{{ $item->id === $initialItem->id ? 'true' : 'false' }}">
                                     <span class="menu-item-button__thumb">
                                         @if($item->image_path)
-                                            <img src="{{ IlluminateSupportFacadesStorage::url($item->image_path) }}" alt="" width="96" height="96" loading="lazy" decoding="async">
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}" alt="" width="96" height="96" loading="lazy" decoding="async">
                                         @else
                                             <span>گ</span>
                                         @endif
