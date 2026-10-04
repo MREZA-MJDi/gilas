@@ -98,6 +98,7 @@ class CustomerOrderingFlowTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertCookie('gilas_table_token', $qr->token)
             ->assertSee('لاته')
             ->assertSee('بادام')
             ->assertSee('میز 1')

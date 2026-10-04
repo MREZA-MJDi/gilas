@@ -27,12 +27,14 @@ class TableOrderingController extends Controller
 
         $menu = $this->catalog->forRestaurant($restaurant);
 
-        return view('customer.table-menu', [
-            'restaurant' => $restaurant,
-            'table' => $qr->table,
-            'qr' => $qr,
-            'menu' => $menu,
-        ]);
+        return response()
+            ->view('customer.table-menu', [
+                'restaurant' => $restaurant,
+                'table' => $qr->table,
+                'qr' => $qr,
+                'menu' => $menu,
+            ])
+            ->cookie('gilas_table_token', $qr->token, 120);
     }
 
     public function storeOrder(StoreTableOrderRequest $request, string $token): JsonResponse
@@ -52,6 +54,8 @@ class TableOrderingController extends Controller
                 'order_number' => $order->order_number,
                 'status' => $order->status->value,
                 'total' => $order->total,
+                'public_token' => $order->public_token,
+                'tracking_url' => route('customer.orders.show', $order->public_token),
             ],
         ], 201);
     }

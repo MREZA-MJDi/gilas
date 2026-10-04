@@ -1,3 +1,3 @@
 import './bootstrap';
-import './customer-menu';
+import './footsteps';
 import './gilas-interactions';
