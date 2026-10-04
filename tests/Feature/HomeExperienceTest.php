@@ -31,11 +31,12 @@ class HomeExperienceTest extends TestCase
             ->assertOk()
             ->assertSee(route('menu.index'), false)
             ->assertSee(route('public.reservation'), false)
-            ->assertSee(route('public.experience'), false)
-            ->assertSee(route('public.location'), false)
-            ->assertSee(route('public.story'), false);
+            ->assertSee(route('public.location'), false);
 
-        $response->assertDontSee('GILAS');
+        $response
+            ->assertDontSee(route('public.experience'), false)
+            ->assertDontSee(route('public.story'), false)
+            ->assertDontSee('GILAS');
         $response->assertDontSee('Today at');
         $response->assertDontSee('چیزهایی که امروز');
         $response->assertDontSee('انتخاب‌های امروز');
