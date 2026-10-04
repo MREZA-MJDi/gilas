@@ -40,6 +40,14 @@
         $('[data-close-success]')?.addEventListener('click', closeSuccess);
         submitButton?.addEventListener('click', submitOrder);
 
+        all('input[name="payment-method"]').forEach(input => {
+            input.addEventListener('change', () => {
+                all('.table-payment-choice').forEach(choice => {
+                    choice.classList.toggle('is-selected', choice.querySelector('input')?.checked === true);
+                });
+            });
+        });
+
         document.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
             if (!successSheet.classList.contains('hidden')) closeSuccess();
@@ -260,6 +268,7 @@
                 },
                 body: JSON.stringify({
                     customer_note: ($('#customer-note')?.value || '').trim() || null,
+                    payment_method: document.querySelector('input[name="payment-method"]:checked')?.value || 'online',
                     items: state.cart.map(line => ({
                         menu_item_id: line.menu_item_id,
                         menu_item_variant_id: line.menu_item_variant_id,
