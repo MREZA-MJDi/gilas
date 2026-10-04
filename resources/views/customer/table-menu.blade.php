@@ -22,7 +22,7 @@
                     'name' => $item->name,
                     'description' => $item->description,
                     'price' => (int) $item->price,
-                    'image' => $item->image_path ? \Illuminate\Support\Facades\Storage::url($item->image_path) : null,
+                    'image' => $item->image_url,
                     'variants' => $item->variants->map(fn ($variant) => [
                         'id' => $variant->id, 'name' => $variant->name, 'price' => (int) $variant->price,
                     ])->values()->all(),
