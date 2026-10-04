@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\DeliveryStatus;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Enums\RestaurantUserRole;
@@ -293,7 +294,7 @@ class GilasDemoSeeder extends Seeder
             };
 
             $payment = $order->payment()->firstOrCreate([], [
-                'method' => $type === OrderType::Delivery ? 'online' : 'cash',
+                 'method' => $type === OrderType::Delivery ? PaymentMethod::Online : PaymentMethod::Cashier,
                 'status' => $paymentStatus,
                 'amount' => $total,
                 'paid_at' => $paymentStatus === PaymentStatus::Paid ? now()->subMinutes(7) : null,
@@ -301,7 +302,7 @@ class GilasDemoSeeder extends Seeder
 
             if ($paymentStatus === PaymentStatus::Paid && ! $payment->transactions()->exists()) {
                 $payment->transactions()->create([
-                    'provider' => $payment->method === 'online' ? 'demo_gateway' : 'cashier',
+                    'provider' => $payment->method === PaymentMethod::Online ? 'demo_gateway' : 'cashier',
                     'transaction_id' => 'DEMO-' . $order->id,
                     'reference' => 'REF-' . str_pad((string) $order->id, 8, '0', STR_PAD_LEFT),
                     'amount' => $total,
