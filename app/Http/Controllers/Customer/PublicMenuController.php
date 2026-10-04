@@ -41,12 +41,14 @@ class PublicMenuController extends Controller
                 ->values();
         }
 
-        $featuredItems = $sourceMenu
-            ->flatMap(fn ($category) => $category->items->map(
-                fn ($item) => ['item' => $item, 'category' => $category]
-            ))
-            ->take(4)
-            ->values();
+        $featuredItems = blank($selectedSlug)
+            ? $sourceMenu
+                ->flatMap(fn ($category) => $category->items->map(
+                    fn ($item) => ['item' => $item, 'category' => $category]
+                ))
+                ->take(4)
+                ->values()
+            : collect();
 
         return view('customer.menu', [
             'restaurant' => $restaurant,
