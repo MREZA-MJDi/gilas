@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Customer\OrderTrackingController;
 use App\Http\Controllers\Customer\PublicMenuController;
+use App\Http\Controllers\Customer\PublicOrderController;
 use App\Http\Controllers\Customer\PublicMenuItemController;
 use App\Http\Controllers\Customer\PublicPageController;
 use App\Http\Controllers\Customer\TableOrderingController;
@@ -33,6 +34,10 @@ Route::get('/table/{token}', [TableOrderingController::class, 'menu'])
 Route::post('/table/{token}/orders', [TableOrderingController::class, 'storeOrder'])
     ->where('token', '[A-Za-z0-9]+')
     ->name('table.orders.store');
+
+Route::post('/orders', [PublicOrderController::class, 'store'])
+    ->middleware('throttle:8,1')
+    ->name('customer.orders.store');
 
 Route::get('/orders/{publicToken}', [OrderTrackingController::class, 'show'])
     ->where('publicToken', '[A-Za-z0-9]+')
