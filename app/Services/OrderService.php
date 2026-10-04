@@ -485,6 +485,9 @@ class OrderService
 
         $canonical = [
             'order_type' => $type->value,
+            'payment_method' => ($data['payment_method'] ?? PaymentMethod::Cashier->value) instanceof PaymentMethod
+                ? ($data['payment_method'] ?? PaymentMethod::Cashier)->value
+                : (string) ($data['payment_method'] ?? PaymentMethod::Cashier->value),
             'customer_id' => $data['customer_id'] ?? null,
             'restaurant_table_id' => $data['restaurant_table_id'] ?? null,
             'customer_address_id' => $data['customer_address_id'] ?? null,
