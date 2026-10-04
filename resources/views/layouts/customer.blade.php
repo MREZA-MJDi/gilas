@@ -19,7 +19,7 @@
         @yield('content')
     </div>
 
-    @unless(View::hasSection('hide_footer'))
+    @unless(trim($__env->yieldContent('hide_footer')))
         <footer class="gilas-site-footer" aria-label="پاورقی گیلاس">
             <div class="ui-shell gilas-site-footer__inner">
                 <a href="{{ route('home') }}" class="gilas-site-footer__brand" aria-label="بازگشت به گیلاس">
