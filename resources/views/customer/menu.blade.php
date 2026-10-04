@@ -44,9 +44,14 @@
         ];
     })->values()->all();
 
-    $initialCategory = filled($selectedSlug)
-        ? ($menu->firstWhere('slug', $selectedSlug) ?: $menu->first())
-        : $menu->first();
+    $requestedCategory = filled($selectedSlug)
+        ? $menu->firstWhere('slug', $selectedSlug)
+        : null;
+
+    $initialCategory = $requestedCategory?->items->isNotEmpty()
+        ? $requestedCategory
+        : $menu->first(fn ($category) => $category->items->isNotEmpty());
+
     $initialItem = $initialCategory?->items->first();
 
     $tableToken = request()->cookie('gilas_table_token');
