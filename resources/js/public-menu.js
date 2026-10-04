@@ -102,8 +102,17 @@
             }, { once: true });
         });
 
-        $('[data-public-customer-note]')?.addEventListener('input', syncCart);
-        $('#public-customer-note')?.addEventListener('input', syncCart);
+        all('input[name="public-order-type"], input[name="public-payment-method"]').forEach(input => {
+            input.addEventListener('change', () => {
+                syncCheckoutFields();
+                syncCart();
+            });
+        });
+
+        all('#public-customer-name, #public-customer-phone, #public-customer-email, #public-customer-address, #public-customer-postal, #public-customer-note')
+            .forEach(input => input.addEventListener('input', () => syncCart()));
+
+        syncCheckoutFields();
     }
 
     function selectCategory(categoryId) {
@@ -526,9 +535,43 @@
         const hint = $('[data-public-cart-hint]');
         if (hint) {
             hint.textContent = orderUrl
-                ? 'سفارش از همین میز ثبت می‌شود و مستقیم به آشپزخانه می‌رود.'
-                : 'برای ثبت نهایی سفارش، از QR میز وارد منوی میز شو.';
+                ? 'میز فعلی از QR تشخیص داده شده؛ فقط روش پرداخت را انتخاب کن.'
+                : 'اول نوع دریافت، اطلاعات تماس و روش پرداخت را انتخاب کن.';
         }
+
+        syncCheckoutFields();
+    }
+
+    function syncCheckoutFields() {
+        const delivery = !orderUrl && document.querySelector('input[name="public-order-type"]:checked')?.value === 'delivery';
+        const addressFields = document.querySelector('[data-public-address-fields]');
+        if (addressFields) addressFields.hidden = !delivery;
+
+        document.querySelectorAll('input[name="public-order-type"]').forEach(input => {
+            input.closest('.menu-choice')?.classList.toggle('menu-choice--selected', input.checked);
+        });
+
+        document.querySelectorAll('input[name="public-payment-method"]').forEach(input => {
+            input.closest('.menu-choice')?.classList.toggle('menu-choice--selected', input.checked);
+        });
+    }
+
+    function checkoutPayload() {
+        const orderType = orderUrl
+            ? 'dine_in'
+            : (document.querySelector('input[name="public-order-type"]:checked')?.value || 'pickup');
+        const paymentMethod = document.querySelector('input[name="public-payment-method"]:checked')?.value || 'online';
+
+        return {
+            order_type: orderType,
+            payment_method: paymentMethod,
+            customer_name: $('#public-customer-name')?.value.trim() || '',
+            phone: $('#public-customer-phone')?.value.trim() || '',
+            email: $('#public-customer-email')?.value.trim() || null,
+            address: $('#public-customer-address')?.value.trim() || null,
+            postal_code: $('#public-customer-postal')?.value.trim() || null,
+            customer_note: $('#public-customer-note')?.value.trim() || null,
+        };
     }
 
     function openCart() {
@@ -575,6 +618,38 @@
 
         if (state.submitting || !state.cart.length) return;
 
+        const checkout = checkoutPayload();
+        const checkoutErrors = [];
+
+        if (!orderUrl && !['pickup', 'delivery'].includes(checkout.order_type)) {
+            checkoutErrors.push('نوع دریافت سفارش را انتخاب کن.');
+        }
+
+        if (!checkout.customer_name || checkout.customer_name.length < 2) {
+            checkoutErrors.push('نام و نام خانوادگی را وارد کن.');
+        }
+
+        if (!checkout.phone || checkout.phone.length < 8) {
+            checkoutErrors.push('شماره موبایل را وارد کن.');
+        }
+
+        if (!['online', 'cashier'].includes(checkout.payment_method)) {
+            checkoutErrors.push('روش پرداخت را انتخاب کن.');
+        }
+
+        if (checkout.order_type === 'delivery' && (!checkout.address || checkout.address.length < 8)) {
+            checkoutErrors.push('برای ارسال، آدرس کامل لازم است.');
+        }
+
+        if (checkoutErrors.length) {
+            const alert = $('[data-public-cart-alert]');
+            if (alert) {
+                alert.hidden = false;
+                alert.textContent = checkoutErrors[0];
+            }
+            return;
+        }
+
         state.submitting = true;
         syncCart();
 
@@ -596,6 +671,7 @@
                     'Idempotency-Key': idempotencyKey,
                 },
                 body: JSON.stringify({
+                    ...checkout,
                     items: state.cart.map(line => ({
                         menu_item_id: line.menu_item_id,
                         menu_item_variant_id: line.menu_item_variant_id,
@@ -612,6 +688,8 @@
                 throw new Error(firstError(data) || data.message || 'ثبت سفارش انجام نشد.');
             }
 
+            state.cart = [];
+            saveCart();
             window.location.href = data?.data?.tracking_url || ('/orders/' + encodeURIComponent(data?.data?.public_token || ''));
         } catch (error) {
             const alert = $('[data-public-cart-alert]');
