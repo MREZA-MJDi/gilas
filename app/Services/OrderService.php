@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Events\OrderCreated;
 use App\Enums\OrderType;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\MenuItem;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Restaurant;
 use App\Models\RestaurantTable;
 use App\Models\User;
@@ -150,12 +153,17 @@ class OrderService
                     }
                 }
 
+                $this->createPendingPayment(
+                    $order,
+                    $data['payment_method'] ?? PaymentMethod::Cashier->value
+                );
+
                 $order->statusHistory()->create([
                     'from_status' => null,
                     'to_status' => OrderStatus::Pending,
                 ]);
 
-                return $order->load(['items.options', 'statusHistory']);
+                return $order->load(['items.options', 'statusHistory', 'payment']);
             });
 
             event(new OrderCreated($order->id));
@@ -293,6 +301,16 @@ class OrderService
             ]);
         }
 
+        $paymentMethod = $data['payment_method'] ?? PaymentMethod::Cashier->value;
+
+        try {
+            PaymentMethod::from((string) $paymentMethod);
+        } catch (\ValueError) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'The selected payment method is invalid.',
+            ]);
+        }
+
         $customerId = $data['customer_id'] ?? null;
 
         if ($customerId !== null) {
@@ -386,6 +404,26 @@ class OrderService
         ]);
     }
 
+    private function createPendingPayment(Order $order, mixed $method): Payment
+    {
+        try {
+            $paymentMethod = $method instanceof PaymentMethod
+                ? $method
+                : PaymentMethod::from((string) $method);
+        } catch (\ValueError) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'The selected payment method is invalid.',
+            ]);
+        }
+
+        return $order->payment()->create([
+            'method' => $paymentMethod->value,
+            'status' => PaymentStatus::Pending,
+            'amount' => $order->total,
+            'paid_at' => null,
+        ]);
+    }
+
     private function resolveOrderType(mixed $value): OrderType
     {
         if ($value instanceof OrderType) {
@@ -475,7 +513,7 @@ class OrderService
             ]);
         }
 
-        return $order->load(['items.options', 'statusHistory']);
+        return $order->load(['items.options', 'statusHistory', 'payment']);
     }
 
     private function normalizeOptionValueIds(array $ids, int $index): array
