@@ -1,33 +1,34 @@
 <?php
 
-namespace AppHttpControllersCustomer;
+namespace App\Http\Controllers\Customer;
 
-use AppEnumsOrderStatus;
-use AppHttpControllersController;
-use AppModelsOrder;
+use App\Enums\OrderStatus;
+use App\Enums\OrderType;
+use App\Http\Controllers\Controller;
+use App\Models\Order;
 use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class OrderTrackingController extends Controller
 {
-    public function show(string $publicToken)
+    public function show(string $publicToken): View
     {
-        $order = Order::query()
-            ->where('public_token', $publicToken)
-            ->with(['restaurant:id,name,currency', 'table:id,number'])
-            ->firstOrFail();
+        $order = $this->findOrder($publicToken);
+
+        $returnUrl = $order->order_type === OrderType::DineIn && request()->cookie('gilas_table_token')
+            ? route('table.menu', request()->cookie('gilas_table_token'))
+            : route('menu.index');
 
         return view('customer.order-waiting', [
             'order' => $order,
             'statusUrl' => route('customer.orders.status', $order->public_token),
+            'returnUrl' => $returnUrl,
         ]);
     }
 
     public function status(string $publicToken): JsonResponse
     {
-        $order = Order::query()
-            ->where('public_token', $publicToken)
-            ->with(['restaurant:id,name,currency', 'table:id,number'])
-            ->firstOrFail();
+        $order = $this->findOrder($publicToken);
 
         return response()->json([
             'data' => [
@@ -36,8 +37,17 @@ class OrderTrackingController extends Controller
                 'status_label' => $this->statusLabel($order->status),
                 'total' => $order->total,
                 'table' => $order->table?->number,
+                'order_type' => $order->order_type->value,
             ],
         ]);
+    }
+
+    private function findOrder(string $publicToken): Order
+    {
+        return Order::query()
+            ->where('public_token', $publicToken)
+            ->with(['restaurant:id,name,currency', 'table:id,number'])
+            ->firstOrFail();
     }
 
     private function statusLabel(OrderStatus $status): string
