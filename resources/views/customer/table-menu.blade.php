@@ -1,5 +1,8 @@
 @extends('layouts.customer')
 
+@section('body_class', 'customer-table-menu')
+@section('hide_footer', '1')
+
 @php
     $coverUrl = $restaurant->cover_image_path
         ? \Illuminate\Support\Facades\Storage::url($restaurant->cover_image_path)
@@ -242,7 +245,12 @@
             <div class="mt-8 rounded-3xl border border-white/8 bg-white/[0.035] p-4">
                 <div class="flex items-center justify-between gap-4 text-sm"><span class="text-stone-500">مبلغ نهایی</span><strong class="text-rose-100"><span id="success-total">۰</span> {{ $restaurant->currency }}</strong></div>
             </div>
-            <button type="button" data-close-success class="mt-4 h-13 w-full rounded-2xl border border-white/10 bg-white/5 text-sm font-semibold text-white">بازگشت به منو</button>
+            <a id="success-track-link"
+               href="#"
+               class="mt-4 flex h-13 w-full items-center justify-center rounded-2xl bg-rose-100 text-sm font-bold text-stone-950">
+                پیگیری سفارش
+            </a>
+            <button type="button" data-close-success class="mt-3 h-13 w-full rounded-2xl border border-white/10 bg-white/5 text-sm font-semibold text-white">بازگشت به منو</button>
         </div>
     </div>
 
