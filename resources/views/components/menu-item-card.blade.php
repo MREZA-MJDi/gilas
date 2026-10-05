@@ -17,7 +17,7 @@
 
 <article
     class="menu-card"
-    @if($interactive) data-menu-card data-item-id="{{ $item->id }}" @endif
+    @if($interactive) data-menu-card data-item-id="{{ $item->id }}" data-search="{{ mb_strtolower($item->name . ' ' . ($item->description ?? ''), 'UTF-8') }}" @endif
 >
     @if($interactive)
         <button type="button" data-open-item="{{ $item->id }}" class="menu-card__button">
