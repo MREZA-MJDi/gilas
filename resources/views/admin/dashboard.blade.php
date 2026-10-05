@@ -19,7 +19,6 @@
             <div class="admin-title"><h1>سلام {{ $user->name ?: 'مدیر' }} 👋</h1><p>نمای سریع وضعیت خانه گیلاسی برای امروز.</p></div>
             <form method="POST" action="{{ route('admin.logout') }}">@csrf<button class="admin-logout" type="submit">خروج</button></form>
         </header>
-
         <section class="admin-data-grid" aria-label="شاخص‌های امروز">
             <article class="admin-stat"><small>سفارش امروز</small><strong>{{ number_format($metrics['ordersToday']) }}</strong></article>
             <article class="admin-stat"><small>فروش امروز</small><strong>{{ number_format($metrics['revenueToday']) }}</strong></article>
@@ -30,17 +29,27 @@
             <article class="admin-stat"><small>رزرو امروز</small><strong>{{ number_format($metrics['reservationsToday']) }}</strong></article>
             <article class="admin-stat"><small>پرداخت‌شده</small><strong>{{ number_format($metrics['paidToday']) }}</strong></article>
         </section>
-
         <section class="admin-panels">
             <article class="admin-panel">
-                <h2>آخرین سفارش‌ها</h2>
-                <p>داده‌ی واقعی همین رستوران؛ بدون mock.</p>
+                <h2>آخرین سفارش‌ها</h2><p>داده‌ی واقعی همین رستوران؛ بدون mock.</p>
                 <div class="admin-orders">
                     @forelse($recentOrders as $order)
+                        @php($statusLabel = match($order->status->value) {
+                            'pending' => 'در انتظار',
+                            'confirmed' => 'تأیید شده',
+                            'preparing' => 'در حال آماده‌سازی',
+                            'ready' => 'آماده',
+                            'served' => 'سرو شده',
+                            'out_for_delivery' => 'در مسیر',
+                            'delivered' => 'تحویل شد',
+                            'completed' => 'تکمیل شده',
+                            'cancelled' => 'لغو شده',
+                            default => $order->status->value,
+                        })
                         <div class="admin-order-row">
                             <div><strong>{{ $order->order_number }}</strong><span> · {{ $order->customer?->name ?: 'مهمان' }} @if($order->table) · میز {{ $order->table->number }} @endif</span></div>
                             <span>{{ number_format((int) $order->total) }}</span>
-                            <span class="admin-badge">{{ $order->status->label() }}</span>
+                            <span class="admin-badge">{{ $statusLabel }}</span>
                         </div>
                     @empty
                         <div class="admin-empty">هنوز سفارشی ثبت نشده است.</div>
@@ -48,8 +57,7 @@
                 </div>
             </article>
             <article class="admin-panel">
-                <h2>مسیرهای سریع</h2>
-                <p>کارهای پرتکرار باید یک لمس فاصله داشته باشند.</p>
+                <h2>مسیرهای سریع</h2><p>کارهای پرتکرار باید یک لمس فاصله داشته باشند.</p>
                 <div class="admin-orders">
                     <div class="admin-order-row"><strong>سفارش‌ها</strong><a class="admin-badge" href="#">باز کردن</a></div>
                     <div class="admin-order-row"><strong>میزها و QR</strong><a class="admin-badge" href="#">باز کردن</a></div>
