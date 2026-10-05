@@ -9,7 +9,6 @@ use App\Services\OrderService;
 use App\Services\TableQrCodeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-use Illuminate\View\View;
 
 class TableOrderingController extends Controller
 {
@@ -20,11 +19,10 @@ class TableOrderingController extends Controller
     ) {
     }
 
-    public function menu(string $token): View
+    public function menu(string $token): Response
     {
         $qr = $this->qrCodes->resolveOrFail($token);
         $restaurant = $qr->table->restaurant;
-
         $menu = $this->catalog->forRestaurant($restaurant);
 
         return response()
