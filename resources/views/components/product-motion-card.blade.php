@@ -1,7 +1,7 @@
-@props(['products' => collect(), 'label' => 'پیشنهاد خانه گیلاسی'])
+@props(['products' => collect(), 'label' => 'پیشنهاد خانه گیلاسی', 'currency' => 'تومان'])
 
 @php
-    $items = collect($products)->values()->map(function ($item) {
+    $items = collect($products)->values()->map(function ($item) use ($currency) {
         $image = $item->image_path
             ? IlluminateSupportFacadesStorage::url($item->image_path)
             : null;
@@ -12,7 +12,7 @@
             'category' => $item->category?->name,
             'description' => $item->description,
             'image' => $image,
-            'price_label' => number_format((int) $item->price) . ' تومان',
+            'price_label' => number_format((int) $item->price) . ' ' . $currency,
             'url' => route('menu.item', ['slug' => $item->slug]),
         ];
     })->filter(fn ($item) => filled($item['image']))->values();
@@ -33,10 +33,9 @@
                 </div>
             </div>
         </div>
-
         <div class="gilas-product__controls">
             <div class="gilas-product__shapes" aria-label="حالت تصویر">
-                <button type="button" class="gilas-product__shape" data-shape="rectangle" aria-label="مستطیل"></button>
+                <button type="button" class="gilas-product__shape is-active" data-shape="rectangle" aria-label="مستطیل"></button>
                 <button type="button" class="gilas-product__shape" data-shape="circle" aria-label="دایره"></button>
                 <button type="button" class="gilas-product__shape" data-shape="diamond" aria-label="لوزی"></button>
                 <button type="button" class="gilas-product__shape" data-shape="hexagon" aria-label="شش ضلعی"></button>
@@ -48,7 +47,6 @@
         </div>
         <div class="gilas-product__dots" data-product-dots aria-label="محصولات"></div>
     </div>
-
     <div class="gilas-product__details">
         <div class="gilas-product__topline"><span data-product-category>{{ $label }}</span><span data-product-position>01 / 01</span></div>
         <h2 class="gilas-product__name" data-product-name>...</h2>
