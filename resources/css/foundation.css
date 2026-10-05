@@ -133,3 +133,13 @@
         .menu-card,.menu-card__media img,.menu-card__shine { transition:none; }
     }
 }
+
+@layer components {
+    .home-footer { padding:28px 0 calc(28px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--c-ink); color:#fff; }
+    .home-footer__inner { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+    .home-footer a { color:rgba(255,255,255,.72); text-decoration:none; font-size:11px; }
+    .home-footer__brand { color:#fff !important; font-weight:800; }
+    .public-menu-empty { padding:70px 20px; border:1px dashed var(--line); border-radius:22px; text-align:center; background:rgba(255,255,255,.55); }
+    .public-menu-empty h2 { margin:8px 0 0; font-size:26px; }
+    .public-menu-empty p { margin:8px auto 0; max-width:520px; color:var(--muted); font-size:11px; line-height:1.9; }
+}
