@@ -13,7 +13,6 @@
     @endunless
 </head>
 <body class="customer-page">
-    @include('components.footsteps')
     <div class="customer-shell">
         @yield('content')
     </div>
