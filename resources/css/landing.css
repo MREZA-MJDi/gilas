@@ -1,4 +1,5 @@
 @import './app.css';
+@import './hero-grid.css';
 
 .home {
     min-height: 100svh;
