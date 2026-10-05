@@ -9,7 +9,7 @@
     <article class="public-item">
         <div class="public-item__media">
             @if($item->image_path)
-                <img src="{{ IlluminateSupportFacadesStorage::url($item->image_path) }}" alt="{{ $item->name }}" width="1200" height="1200" loading="eager" decoding="async">
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($item->image_path) }}" alt="{{ $item->name }}" width="1200" height="1200" loading="eager" decoding="async">
             @else
                 <span aria-hidden="true">گ</span>
             @endif
