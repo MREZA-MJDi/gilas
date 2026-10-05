@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace AppHttpControllersAdmin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use AppHttpControllersController;
+use IlluminateHttpRedirectResponse;
+use IlluminateHttpRequest;
+use IlluminateSupportFacadesAuth;
+use IlluminateViewView;
 
 class AuthController extends Controller
 {
@@ -18,19 +18,22 @@ class AuthController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required','email'],
-            'password' => ['required','string'],
-            'remember' => ['nullable','boolean'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+            'remember' => ['nullable', 'boolean'],
         ]);
 
         if (!Auth::attempt(
             ['email' => $credentials['email'], 'password' => $credentials['password']],
             (bool) ($credentials['remember'] ?? false)
         )) {
-            return back()->withErrors(['email' => 'ایمیل یا رمز عبور صحیح نیست.'])->onlyInput('email');
+            return back()
+                ->withErrors(['email' => 'ایمیل یا رمز عبور صحیح نیست.'])
+                ->withInput($request->only('email'));
         }
 
         $request->session()->regenerate();
+
         $restaurant = Auth::user()->activeRestaurants()->orderBy('restaurants.id')->first();
 
         if (!$restaurant) {
