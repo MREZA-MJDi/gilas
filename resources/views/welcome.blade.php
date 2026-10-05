@@ -45,7 +45,7 @@
             </div>
 
             <div class="landing-hero__product">
-                @include('components.product-motion-card', ['products' => $featuredItems, 'label' => 'انتخاب امروز'])
+                @include('components.product-motion-card', ['products' => $featuredItems, 'label' => 'انتخاب امروز', 'currency' => $restaurant?->currency ?: 'تومان'])
             </div>
         </section>
 
