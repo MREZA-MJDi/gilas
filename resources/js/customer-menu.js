@@ -126,7 +126,7 @@ const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').mat
             refresh();
         }));
 
-        $('[data-qty-minus]'?.addEventListener('click', () => {
+        $('[data-qty-minus]')?.addEventListener('click', () => {
             state.quantity = Math.max(1, state.quantity - 1);
             refresh();
         });
@@ -134,8 +134,6 @@ const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').mat
             state.quantity = Math.min(99, state.quantity + 1);
             refresh();
         });
-
-        $('[data-qty-minus]')?.addEventListener('click', () => {});
 
         $('[data-add-item]')?.addEventListener('click', () => {
             const selection = selectionFromForm();
