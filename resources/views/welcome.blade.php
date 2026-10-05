@@ -15,7 +15,7 @@
     <meta name="description" content="{{ $restaurant?->description ?: 'خانه گیلاسی؛ طعم، فضا و لحظه‌ای برای مکث.' }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <title>{{ $restaurant?->name ?: 'خانه گیلاسی' }}</title>
-    @unless(app()->environment('testing'))
+    @unless(app()->runningUnitTests())
         @vite(['resources/css/landing.css', 'resources/js/landing.js'])
     @endunless
 </head>
