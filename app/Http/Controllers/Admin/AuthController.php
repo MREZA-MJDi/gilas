@@ -12,7 +12,7 @@ class AuthController extends Controller
 {
     public function create(): View
     {
-        return view('admin_auth_login');
+        return view('admin.auth.login');
     }
 
     public function store(Request $request): RedirectResponse
@@ -33,14 +33,20 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
-        $restaurant = Auth::user()->activeRestaurants()->orderBy('restaurants.id')->first();
+
+        $restaurant = Auth::user()
+            ->activeRestaurants()
+            ->orderBy('restaurants.id')
+            ->first();
 
         if (!$restaurant) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return back()->withErrors(['email' => 'این حساب به هیچ رستوران فعالی دسترسی ندارد.']);
+            return back()->withErrors([
+                'email' => 'این حساب به هیچ رستوران فعالی دسترسی ندارد.',
+            ]);
         }
 
         return redirect()->route('admin.dashboard', ['restaurant' => $restaurant]);
