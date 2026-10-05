@@ -86,7 +86,7 @@
             </div>
 
             <div class="home-hero-gallery__copy" data-home-reveal>
-                <span class="home-hero-gallery__eyebrow">خانه گیلاسی · انتخاب‌های امروز</span>
+                <span class="home-hero-gallery__eyebrow">خانه گیلاسی · ویترین امروز</span>
                 <h1>طعم خوب،<br>با عجله نمی‌آید.</h1>
                 <p>{{ $restaurant?->description ?: 'غذا، نوشیدنی و دسرهای واقعی منوی خانه گیلاسی؛ از دیتابیس، بدون تصویرهای ساختگی یا خارجی.' }}</p>
                 <div class="home-hero-gallery__actions">
@@ -112,10 +112,6 @@
             <div class="hero-grid-view__container">
                 <div class="hero-grid-view__img-wrapper">
                     <img src="" alt="" class="img">
-                    <div class="hero-grid-view__caption">
-                        <strong data-view-name></strong>
-                        <span data-view-price></span>
-                    </div>
                 </div>
 
                 <div class="arrows" aria-hidden="true">
