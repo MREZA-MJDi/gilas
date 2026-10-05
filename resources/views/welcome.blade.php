@@ -19,7 +19,7 @@
         @vite(['resources/css/landing.css', 'resources/js/landing.js'])
     @endunless
 </head>
-<body class="home" data-home>
+<body class="home" data-home data-currency="{{ $restaurant?->currency ?? 'IRR' }}">
 <header class="home-header">
     <div class="ui-shell home-header__inner">
         <a class="home-brand" href="{{ route('home') }}">
