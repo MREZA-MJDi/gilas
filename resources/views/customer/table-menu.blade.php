@@ -122,15 +122,12 @@
 
                 <div class="table-product-grid">
                     @forelse($category->items as $item)
-                        <div data-menu-card
-                             data-search="{{ mb_strtolower($item->name . ' ' . ($item->description ?? ''), 'UTF-8') }}">
-                            <x-menu-item-card
+                        <x-menu-item-card
                                 :item="$item"
                                 :restaurant="$restaurant"
                                 :category-name="$category->name"
                                 interactive
                             />
-                        </div>
                     @empty
                         <p class="public-menu-empty">این دسته فعلاً آیتم فعالی ندارد.</p>
                     @endforelse
