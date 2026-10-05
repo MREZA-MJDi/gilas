@@ -61,7 +61,6 @@
     border-radius: var(--hero-grid-radius);
     opacity: var(--hero-grid-opacity);
     cursor: pointer;
-    pointer-events: none;
     box-sizing: border-box;
     transition: top .35s, opacity .35s, transform .35s, filter .35s;
     -webkit-mask-repeat: no-repeat;
@@ -89,7 +88,6 @@
         --hero-grid-min-size: 100px;
         --hero-grid-radius: 7px;
         --hero-grid-opacity: 1;
-        pointer-events: auto;
     }
 }
 
