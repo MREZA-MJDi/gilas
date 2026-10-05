@@ -78,7 +78,7 @@
     </div>
 </section>
 
-<section class="admin-panel">
+<section class="admin-panel" id="sales">
     <div class="admin-panel__head"><div><span class="admin-kicker">۷ روز اخیر</span><h2>Sales rhythm</h2></div></div>
     <div class="admin-sales">
         @php($maxRevenue = max(1, collect($dailySales)->max('revenue')))
