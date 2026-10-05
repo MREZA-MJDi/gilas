@@ -3,7 +3,7 @@
 @php
     $items = collect($products)->values()->map(function ($item) use ($currency) {
         $image = $item->image_path
-            ? IlluminateSupportFacadesStorage::url($item->image_path)
+            ? \Illuminate\Support\Facades\Storage::url($item->image_path)
             : null;
 
         return [
