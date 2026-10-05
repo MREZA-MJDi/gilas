@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <title>@yield('title', 'خانه گیلاسی')</title>
     <meta name="description" content="@yield('description', 'منوی دیجیتال و تجربه خانه گیلاسی')">
-    @unless(app()->environment('testing'))
+    @unless(app()->runningUnitTests())
         @vite(['resources/css/customer.css', 'resources/js/customer.js'])
     @endunless
 </head>
