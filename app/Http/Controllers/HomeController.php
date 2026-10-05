@@ -1,11 +1,10 @@
 <?php
 
-namespace AppHttpControllers;
+namespace App\Http\Controllers;
 
-use AppModelsMenuItem;
-use AppModelsRestaurant;
-use IlluminateSupportCollection;
-use IlluminateViewView;
+use App\Models\MenuItem;
+use App\Models\Restaurant;
+use Illuminate\View\View;
 
 class HomeController extends Controller
 {
