@@ -1,9 +1,9 @@
 <?php
 
-namespace AppHttpControllers;
+namespace App\Http\Controllers;
 
-use AppModelsRestaurant;
-use IlluminateViewView;
+use App\Models\Restaurant;
+use Illuminate\View\View;
 
 class HomeController extends Controller
 {
