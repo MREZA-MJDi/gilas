@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#3d5d5c">
     <title>@yield('title', 'مدیریت خانه گیلاسی')</title>
-    @unless(app()->environment('testing'))
+    @unless(app()->runningUnitTests())
         @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     @endunless
 </head>
