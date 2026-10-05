@@ -9,8 +9,6 @@ function initHome() {
 
     const view = home.querySelector('.hero-grid-view');
     const viewImg = view?.querySelector('.img');
-    const viewName = view?.querySelector('[data-view-name]');
-    const viewPrice = view?.querySelector('[data-view-price]');
     const items = [...home.querySelectorAll('.home-hero-gallery .pic')];
     const prev = view?.querySelector('.arrow--prev');
     const next = view?.querySelector('.arrow--next');
@@ -20,13 +18,6 @@ function initHome() {
         max: Math.max(0, items.length - 1),
     };
 
-    const formatPrice = (value) => {
-        const amount = Number.parseInt(value || '0', 10);
-        if (!Number.isFinite(amount) || amount <= 0) return '';
-        const number = new Intl.NumberFormat('fa-IR').format(amount);
-        const currency = home.dataset.currency || '';
-        return number + (currency ? ' ' + currency : '');
-    };
 
     const updateFocusableItems = () => {
         items.forEach((item) => {
@@ -51,14 +42,6 @@ function initHome() {
         viewImg.onload = updateOrientation;
         viewImg.src = src;
 
-        if (viewName) {
-            viewName.textContent = item.dataset.name || '';
-        }
-
-        if (viewPrice) {
-            viewPrice.textContent = formatPrice(item.dataset.price);
-        }
-
         requestAnimationFrame(updateOrientation);
     };
 
@@ -68,7 +51,6 @@ function initHome() {
         position.current = Math.max(0, Math.min(index, position.max));
         view.dataset.state = 'open';
         view.setAttribute('aria-hidden', 'false');
-        document.documentElement.style.overflow = 'hidden';
         changeImage();
     };
 
@@ -79,9 +61,6 @@ function initHome() {
         view.setAttribute('aria-hidden', 'true');
         viewImg.src = '';
         viewImg.alt = '';
-        if (viewName) viewName.textContent = '';
-        if (viewPrice) viewPrice.textContent = '';
-        document.documentElement.style.overflow = '';
     };
 
     const showPrev = (event) => {
@@ -125,9 +104,7 @@ function initHome() {
     window.addEventListener('keyup', (event) => {
         if (view?.dataset.state !== 'open') return;
 
-        if (event.key === 'Escape') {
-            hideView();
-        } else if (event.key === 'ArrowLeft') {
+        if (event.key === 'ArrowLeft') {
             showPrev();
         } else if (event.key === 'ArrowRight' || event.key === ' ') {
             event.preventDefault();
@@ -150,19 +127,6 @@ function initHome() {
             clearProps: 'transform',
         });
 
-        if (items.length) {
-            gsap.fromTo(items, {
-                scale: .96,
-                y: 18,
-            }, {
-                scale: 1,
-                y: 0,
-                duration: .65,
-                stagger: .045,
-                ease: 'power3.out',
-                clearProps: 'transform',
-            });
-        }
     }
 }
 
