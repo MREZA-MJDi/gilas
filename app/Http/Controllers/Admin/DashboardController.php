@@ -1,13 +1,13 @@
 <?php
 
-namespace AppHttpControllersAdmin;
+namespace App\Http\Controllers\Admin;
 
-use AppEnumsOrderStatus;
-use AppHttpControllersController;
-use AppModelsRestaurant;
-use IlluminateSupportCarbon;
-use IlluminateSupportFacadesAuth;
-use IlluminateViewView;
+use App\Enums\OrderStatus;
+use App\Http\Controllers\Controller;
+use App\Models\Restaurant;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
@@ -38,7 +38,11 @@ class DashboardController extends Controller
         $categoryCount = $restaurant->categories()->where('is_active',true)->count();
         $reservationsToday = $restaurant->reservations()->whereDate('reservation_date',$today)->whereIn('status',['pending','confirmed','seated'])->count();
 
-        $recentOrders = $restaurant->orders()->with(['customer:id,name','table:id,number','items:id,order_id,quantity'])->latest()->limit(8)->get();
+        $recentOrders = $restaurant->orders()
+            ->with(['customer:id,name','table:id,number','items:id,order_id,quantity'])
+            ->latest()
+            ->limit(8)
+            ->get();
 
         return view('admin.dashboard', [
             'restaurant'=>$restaurant,
