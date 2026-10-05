@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace AppHttpControllers;
 
-use App\Models\Restaurant;
-use Illuminate\View\View;
+use AppModelsRestaurant;
+use IlluminateViewView;
 
 class HomeController extends Controller
 {
@@ -11,56 +11,28 @@ class HomeController extends Controller
     {
         $restaurant = $this->primaryRestaurant();
 
-        $honeycombItems = collect([
-            [
-                'title' => 'منو',
-                'text' => 'منوی گیلاس را ببین و انتخابت را شروع کن.',
-                'cta' => 'دیدن منو',
-                'url' => route('menu.index'),
-                'icon' => '☕',
-            ],
-            [
-                'title' => 'سفارش',
-                'text' => 'سفارش از منوی گیلاس شروع می‌شود.',
-                'cta' => 'شروع سفارش',
-                'url' => route('menu.index'),
-                'icon' => '↗',
-            ],
-            [
-                'title' => 'رزرو',
-                'text' => $restaurant?->settings?->reservation_enabled
-                    ? 'میزت را برای یک قرار خوب هماهنگ کن.'
-                    : 'برای هماهنگی میز با گیلاس تماس بگیر.',
-                'cta' => 'رزرو میز',
-                'url' => route('public.reservation'),
-                'icon' => '◷',
-            ],
-            [
-                'title' => 'مسیریابی',
-                'text' => $restaurant?->address ?: 'مسیر رسیدن به گیلاس را پیدا کن.',
-                'cta' => 'پیدا کردن گیلاس',
-                'url' => route('public.location'),
-                'icon' => '⌖',
-            ],
-        ]);
+        $featuredItems = $restaurant
+            ? $restaurant->items()
+                ->where('is_active', true)
+                ->where('is_available', true)
+                ->with(['category:id,name,slug'])
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->limit(6)
+                ->get(['id','restaurant_id','menu_category_id','name','slug','description','image_path','price'])
+            : collect();
 
-        return view('welcome', compact('restaurant', 'honeycombItems'));
+        return view('welcome', compact('restaurant', 'featuredItems'));
     }
 
     private function primaryRestaurant(): ?Restaurant
     {
-        $query = Restaurant::query()
-            ->where('status', 'active')
-            ->with('settings');
-
+        $query = Restaurant::query()->where('status', 'active')->with('settings');
         $configuredSlug = config('gilas.primary_restaurant_slug');
 
         if (is_string($configuredSlug) && trim($configuredSlug) !== '') {
             $configured = (clone $query)->where('slug', trim($configuredSlug))->first();
-
-            if ($configured) {
-                return $configured;
-            }
+            if ($configured) return $configured;
         }
 
         return $query->orderBy('id')->first();
