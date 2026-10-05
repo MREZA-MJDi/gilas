@@ -1,12 +1,11 @@
 <?php
+namespace App\Http\Controllers\Admin;
 
-namespace AppHttpControllersAdmin;
-
-use AppHttpControllersController;
-use IlluminateHttpRedirectResponse;
-use IlluminateHttpRequest;
-use IlluminateSupportFacadesAuth;
-use IlluminateViewView;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class AuthController extends Controller
 {
@@ -27,26 +26,18 @@ class AuthController extends Controller
             ['email' => $credentials['email'], 'password' => $credentials['password']],
             (bool) ($credentials['remember'] ?? false)
         )) {
-            return back()
-                ->withErrors(['email' => 'ایمیل یا رمز عبور صحیح نیست.'])
-                ->withInput($request->only('email'));
+            return back()->withErrors(['email' => 'ایمیل یا رمز عبور صحیح نیست.'])->withInput($request->only('email'));
         }
 
         $request->session()->regenerate();
-
-        $restaurant = Auth::user()
-            ->activeRestaurants()
-            ->orderBy('restaurants.id')
-            ->first();
+        $restaurant = Auth::user()->activeRestaurants()->orderBy('restaurants.id')->first();
 
         if (!$restaurant) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return back()->withErrors([
-                'email' => 'این حساب به هیچ رستوران فعالی دسترسی ندارد.',
-            ]);
+            return back()->withErrors(['email' => 'این حساب به هیچ رستوران فعالی دسترسی ندارد.']);
         }
 
         return redirect()->route('admin.dashboard', ['restaurant' => $restaurant]);
