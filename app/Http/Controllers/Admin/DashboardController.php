@@ -118,7 +118,7 @@ class DashboardController extends Controller
             ];
         });
 
-        return view('admin.dashboard', [
+        return view('admin_dashboard', [
             'restaurant' => $restaurant,
             'user' => Auth::user(),
             'metrics' => compact(
