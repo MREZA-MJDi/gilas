@@ -126,7 +126,7 @@ const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').mat
             refresh();
         }));
 
-        $('[data-qty-minus']?.addEventListener('click', () => {
+        $('[data-qty-minus]'?.addEventListener('click', () => {
             state.quantity = Math.max(1, state.quantity - 1);
             refresh();
         });
