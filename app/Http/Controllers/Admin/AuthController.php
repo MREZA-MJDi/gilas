@@ -12,7 +12,7 @@ class AuthController extends Controller
 {
     public function create(): View
     {
-        return view('admin.auth.login');
+        return view('admin_auth_login');
     }
 
     public function store(Request $request): RedirectResponse
@@ -33,7 +33,6 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
-
         $restaurant = Auth::user()->activeRestaurants()->orderBy('restaurants.id')->first();
 
         if (!$restaurant) {
