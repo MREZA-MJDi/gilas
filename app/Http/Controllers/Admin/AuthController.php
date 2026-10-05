@@ -1,16 +1,19 @@
 <?php
 
-namespace AppHttpControllersAdmin;
+namespace App\Http\Controllers\Admin;
 
-use AppHttpControllersController;
-use IlluminateHttpRedirectResponse;
-use IlluminateHttpRequest;
-use IlluminateSupportFacadesAuth;
-use IlluminateViewView;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function create(): View { return view('admin.auth.login'); }
+    public function create(): View
+    {
+        return view('admin.auth.login');
+    }
 
     public function store(Request $request): RedirectResponse
     {
@@ -34,6 +37,7 @@ class AuthController extends Controller
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
+
             return back()->withErrors(['email' => 'این حساب به هیچ رستوران فعالی دسترسی ندارد.']);
         }
 
@@ -45,6 +49,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('admin.login');
     }
 }
