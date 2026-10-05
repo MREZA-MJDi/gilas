@@ -52,6 +52,16 @@
                 @if($item->description)
                     <p>{{ $item->description }}</p>
                 @endif
+                @if($options->isNotEmpty())
+                    <span class="sr-only">گزینه‌ها:
+                        @foreach($options as $option)
+                            {{ $option->name }}:
+                            @foreach($option->values as $value)
+                                {{ $value->name }}@if(!$loop->last)، @endif
+                            @endforeach
+                        @endforeach
+                    </span>
+                @endif
             </div>
 
             <div class="menu-card__footer">
