@@ -29,6 +29,7 @@
                 <span><strong>{{ $restaurant?->name ?? 'خانه گیلاسی' }}</strong><span>کافه‌ای برای مکث‌های خوب</span></span>
             </a>
             <nav class="home-nav" aria-label="ناوبری">
+                <a href="{{ route('public.experience') }}">تجربه</a>
                 <a href="{{ route('public.story') }}">داستان</a>
                 <a href="{{ route('public.location') }}">موقعیت</a>
                 @if($restaurant?->settings?->reservation_enabled)
