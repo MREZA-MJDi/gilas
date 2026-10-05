@@ -1,10 +1,10 @@
 <?php
 
-namespace AppHttpControllersCustomer;
+namespace App\Http\Controllers\Customer;
 
-use AppEnumsOrderStatus;
-use AppHttpControllersController;
-use AppModelsOrder;
+use App\Enums\OrderStatus;
+use App\Http\Controllers\Controller;
+use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 
 class OrderTrackingController extends Controller

@@ -1,13 +1,13 @@
 <?php
 
-namespace AppHttpControllersAdmin;
+namespace App\Http\Controllers\Admin;
 
-use AppEnumsOrderStatus;
-use AppHttpControllersController;
-use AppModelsRestaurant;
-use IlluminateSupportCarbon;
-use IlluminateSupportFacadesAuth;
-use IlluminateViewView;
+use App\Enums\OrderStatus;
+use App\Http\Controllers\Controller;
+use App\Models\Restaurant;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
