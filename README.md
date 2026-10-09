@@ -2,6 +2,9 @@
 
 Gilas is a restaurant-focused web application with public pages for its story, experience, location, reservation information, menus and menu items. The routes also include QR/token-based table ordering and customer order tracking, alongside an administration area. Verify the current implementation and provider configuration before relying on a workflow in production.
 
+## Dedicated dashboard
+Gilas includes its own dedicated dashboard for the restaurant management workflow, alongside the public menu and customer table-ordering experience. Verify order handling, authorization, and any integrations against the current implementation before production use.
+
 ## Stack
 - PHP `^8.2`, Laravel `^12.0`
 - Vite 7, Tailwind CSS 4 and Laravel Vite integration
