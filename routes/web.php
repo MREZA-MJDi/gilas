@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Customer\OrderTrackingController;
 use App\Http\Controllers\Customer\PublicMenuController;
 use App\Http\Controllers\Customer\PublicMenuItemController;
@@ -54,5 +55,9 @@ Route::prefix('admin')->group(function () {
 
         // Keep the newer, resource-oriented URL as an alias.
         Route::get('/restaurants/{restaurant}', AdminDashboardController::class)->name('admin.dashboard.overview');
+
+        Route::post('/restaurants/{restaurant:slug}/payments/{payment}/cashier-paid', [PaymentController::class, 'markCashierPaid'])
+            ->middleware('can:markCashierPaid,payment')
+            ->name('admin.payments.cashier-paid');
     });
 });
