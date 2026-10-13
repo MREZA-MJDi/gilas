@@ -67,7 +67,7 @@
                                 <span class="admin-payment-state">ثبت‌نشده</span>
                             @elseif($order->payment->status?->value === 'paid')
                                 <span class="admin-payment-state is-paid">پرداخت‌شده</span>
-                            @elseif($order->payment->method?->value === 'cashier')
+                            @elseif($order->payment->method?->isCashierSettlement())
                                 <span class="admin-payment-state">در انتظار صندوق</span>
                                 @can('markCashierPaid', $order->payment)
                                     <form method="POST" action="{{ route('admin.payments.cashier-paid', [$restaurant->slug, $order->payment->id]) }}" class="admin-payment-form">
