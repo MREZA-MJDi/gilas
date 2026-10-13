@@ -19,7 +19,7 @@ class PaymentPolicy
     {
         $order = $payment->order;
 
-        return $payment->method === PaymentMethod::Cashier
+        return $payment->method?->isCashierSettlement() === true
             && $order?->restaurant !== null
             && $this->access->can(
                 $user,
