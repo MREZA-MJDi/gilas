@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreMenuOptionValueRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'min:1', 'max:120'],
+            'price_delta' => ['required', 'integer', 'min:0', 'max:1000000000'],
+            'sort_order' => ['sometimes', 'integer', 'min:0', 'max:1000000'],
+            'is_active' => ['sometimes', 'boolean'],
+        ];
+    }
+}

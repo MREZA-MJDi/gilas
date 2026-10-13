@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\CourierManagementController;
+use App\Http\Controllers\Admin\DeliveryOperationsController;
+use App\Http\Controllers\Admin\MenuConfigurationController;
+use App\Http\Controllers\Admin\RestaurantMenuController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\OrderStatusController;
 use App\Http\Controllers\Admin\PaymentController;
@@ -61,6 +65,54 @@ Route::prefix('admin')->group(function () {
 
         // Keep the newer, resource-oriented URL as an alias.
         Route::get('/restaurants/{restaurant}', AdminDashboardController::class)->name('admin.dashboard.overview');
+
+        Route::get('/restaurants/{restaurant:slug}/menu', [RestaurantMenuController::class, 'index'])
+            ->name('admin.menu.index');
+        Route::post('/restaurants/{restaurant:slug}/menu/categories', [RestaurantMenuController::class, 'storeCategory'])
+            ->name('admin.menu.categories.store');
+        Route::patch('/restaurants/{restaurant:slug}/menu/categories/{category}', [RestaurantMenuController::class, 'updateCategory'])
+            ->name('admin.menu.categories.update');
+        Route::delete('/restaurants/{restaurant:slug}/menu/categories/{category}', [RestaurantMenuController::class, 'destroyCategory'])
+            ->name('admin.menu.categories.destroy');
+        Route::post('/restaurants/{restaurant:slug}/menu/items', [RestaurantMenuController::class, 'storeItem'])
+            ->name('admin.menu.items.store');
+        Route::patch('/restaurants/{restaurant:slug}/menu/items/{item}', [RestaurantMenuController::class, 'updateItem'])
+            ->name('admin.menu.items.update');
+        Route::delete('/restaurants/{restaurant:slug}/menu/items/{item}', [RestaurantMenuController::class, 'destroyItem'])
+            ->name('admin.menu.items.destroy');
+
+        Route::post('/restaurants/{restaurant:slug}/menu/items/{item}/variants', [MenuConfigurationController::class, 'storeVariant'])
+            ->name('admin.menu.variants.store');
+        Route::patch('/restaurants/{restaurant:slug}/menu/items/{item}/variants/{variant}', [MenuConfigurationController::class, 'updateVariant'])
+            ->name('admin.menu.variants.update');
+        Route::delete('/restaurants/{restaurant:slug}/menu/items/{item}/variants/{variant}', [MenuConfigurationController::class, 'destroyVariant'])
+            ->name('admin.menu.variants.destroy');
+        Route::post('/restaurants/{restaurant:slug}/menu/items/{item}/options', [MenuConfigurationController::class, 'storeOption'])
+            ->name('admin.menu.options.store');
+        Route::patch('/restaurants/{restaurant:slug}/menu/items/{item}/options/{option}', [MenuConfigurationController::class, 'updateOption'])
+            ->name('admin.menu.options.update');
+        Route::delete('/restaurants/{restaurant:slug}/menu/items/{item}/options/{option}', [MenuConfigurationController::class, 'destroyOption'])
+            ->name('admin.menu.options.destroy');
+        Route::post('/restaurants/{restaurant:slug}/menu/items/{item}/options/{option}/values', [MenuConfigurationController::class, 'storeOptionValue'])
+            ->name('admin.menu.option-values.store');
+        Route::patch('/restaurants/{restaurant:slug}/menu/items/{item}/options/{option}/values/{value}', [MenuConfigurationController::class, 'updateOptionValue'])
+            ->name('admin.menu.option-values.update');
+        Route::delete('/restaurants/{restaurant:slug}/menu/items/{item}/options/{option}/values/{value}', [MenuConfigurationController::class, 'destroyOptionValue'])
+            ->name('admin.menu.option-values.destroy');
+
+        Route::get('/restaurants/{restaurant:slug}/couriers', [CourierManagementController::class, 'index'])
+            ->name('admin.couriers.index');
+        Route::post('/restaurants/{restaurant:slug}/couriers', [CourierManagementController::class, 'store'])
+            ->name('admin.couriers.store');
+        Route::patch('/restaurants/{restaurant:slug}/couriers/{courier}', [CourierManagementController::class, 'update'])
+            ->name('admin.couriers.update');
+        Route::delete('/restaurants/{restaurant:slug}/couriers/{courier}', [CourierManagementController::class, 'destroy'])
+            ->name('admin.couriers.destroy');
+
+        Route::get('/restaurants/{restaurant:slug}/deliveries', [DeliveryOperationsController::class, 'index'])
+            ->name('admin.deliveries.index');
+        Route::patch('/restaurants/{restaurant:slug}/deliveries/{delivery}/status', [DeliveryOperationsController::class, 'update'])
+            ->name('admin.deliveries.status');
 
         Route::patch('/restaurants/{restaurant:slug}/orders/{order}/status', [OrderStatusController::class, 'update'])
             ->name('admin.orders.status');

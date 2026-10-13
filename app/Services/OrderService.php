@@ -192,10 +192,15 @@ class OrderService
                         filled($address->postal_code) ? 'کدپستی '.$address->postal_code : null,
                     ]));
 
-                    $order->delivery()->create([
+                    $delivery = $order->delivery()->create([
                         'status' => DeliveryStatus::Pending,
                         'delivery_address_snapshot' => $addressSnapshot,
                         'customer_note' => $data['customer_note'] ?? null,
+                    ]);
+
+                    $delivery->statusHistories()->create([
+                        'from_status' => null,
+                        'to_status' => DeliveryStatus::Pending,
                     ]);
                 }
 

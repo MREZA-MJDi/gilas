@@ -10,7 +10,7 @@ class ImageService
 {
     public function store(UploadedFile $file, string $directory = 'uploads'): string
     {
-        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'bin');
+        $extension = strtolower($file->extension() ?: 'bin');
         $filename = Str::uuid() . '.' . $extension;
 
         return $file->storeAs(trim($directory, '/'), $filename, 'public');
