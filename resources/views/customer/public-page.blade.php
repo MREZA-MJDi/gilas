@@ -4,31 +4,20 @@
 @section('description', $content['copy'])
 
 @section('content')
-<main class="ui-shell public-page-shell">
-    <a href="{{ route('home') }}" class="public-page-back">← گیلاس</a>
-
-    <section class="public-page-card">
-        <div class="public-page-card__glow"></div>
-        <div class="public-page-card__copy">
-            <span class="eyebrow">{{ $content['eyebrow'] }}</span>
-            <p class="public-page-card__brand">{{ $restaurant->name }}</p>
+<main class="ui-shell public-info">
+    <a href="{{ route('home') }}" class="public-info__back">← {{ $restaurant->name }}</a>
+    <section class="public-info__grid">
+        <div class="public-info__copy">
+            <span class="ui-kicker">{{ $content['eyebrow'] }}</span>
             <h1>{{ $content['title'] }}</h1>
-            <p class="public-page-card__text">{{ $content['copy'] }}</p>
-            <a class="public-page-card__action"
-               href="{{ $content['action'] }}"
-               @if(str_starts_with($content['action'], 'http')) target="_blank" rel="noopener" @endif>
+            <p>{{ $content['copy'] }}</p>
+            <a class="ui-button ui-button--primary" href="{{ $content['action'] }}" @if(str_starts_with($content['action'], 'http')) target="_blank" rel="noopener" @endif>
                 {{ $content['action_label'] }}
             </a>
         </div>
-
         @if($restaurant->cover_image_path)
-            <div class="public-page-card__media">
-                <img src="{{ \Illuminate\Support\Facades\Storage::url($restaurant->cover_image_path) }}"
-                     alt="{{ $restaurant->name }}"
-                     loading="eager"
-                     decoding="async"
-                     width="1200"
-                     height="900">
+            <div class="public-info__media">
+                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($restaurant->cover_image_path) }}" alt="{{ $restaurant->name }}" width="1200" height="900" loading="eager">
             </div>
         @endif
     </section>

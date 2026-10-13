@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -18,16 +17,16 @@ class AuthController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required','email'],
-            'password' => ['required','string'],
-            'remember' => ['nullable','boolean'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+            'remember' => ['nullable', 'boolean'],
         ]);
 
         if (!Auth::attempt(
             ['email' => $credentials['email'], 'password' => $credentials['password']],
             (bool) ($credentials['remember'] ?? false)
         )) {
-            return back()->withErrors(['email' => 'ایمیل یا رمز عبور صحیح نیست.'])->onlyInput('email');
+            return back()->withErrors(['email' => 'ایمیل یا رمز عبور صحیح نیست.'])->withInput($request->only('email'));
         }
 
         $request->session()->regenerate();

@@ -1,74 +1,126 @@
 @extends('layouts.admin')
 
-@section('title', 'داشبورد — ' . $restaurant->name)
+@section('title', $restaurant->name . ' — داشبورد')
 
-@section('body')
-<div class="admin-shell">
-    <aside class="admin-sidebar">
-        <div class="admin-brand"><div class="admin-brand__mark">گ</div><div><strong>{{ $restaurant->name }}</strong><small>Operations Room</small></div></div>
-        <nav class="admin-nav" aria-label="ناوبری مدیریت">
-            <a class="is-active" href="{{ route('admin.dashboard', $restaurant) }}"><span>⌂</span><span>داشبورد</span></a>
-            <a href="#"><span>◉</span><span>سفارش‌ها</span></a>
-            <a href="#"><span>◈</span><span>آشپزخانه</span></a>
-            <a href="#"><span>▦</span><span>میزها و QR</span></a>
-            <a href="{{ route('menu.index') }}"><span>☕</span><span>منوی مشتری</span></a>
-        </nav>
-    </aside>
-    <main class="admin-main">
-        <header class="admin-topbar">
-            <div class="admin-title"><h1>سلام {{ $user->name ?: 'مدیر' }} 👋</h1><p>نمای سریع وضعیت خانه گیلاسی برای امروز.</p></div>
-            <form method="POST" action="{{ route('admin.logout') }}">@csrf<button class="admin-logout" type="submit">خروج</button></form>
-        </header>
-        <section class="admin-data-grid" aria-label="شاخص‌های امروز">
-            <article class="admin-stat"><small>سفارش امروز</small><strong>{{ number_format($metrics['ordersToday']) }}</strong></article>
-            <article class="admin-stat"><small>فروش امروز</small><strong>{{ number_format($metrics['revenueToday']) }}</strong></article>
-            <article class="admin-stat"><small>سفارش باز</small><strong>{{ number_format($metrics['openOrders']) }}</strong></article>
-            <article class="admin-stat"><small>میز فعال</small><strong>{{ number_format($metrics['activeTables']) }}</strong></article>
-            <article class="admin-stat"><small>آیتم منو</small><strong>{{ number_format($metrics['menuCount']) }}</strong></article>
-            <article class="admin-stat"><small>دسته منو</small><strong>{{ number_format($metrics['categoryCount']) }}</strong></article>
-            <article class="admin-stat"><small>رزرو امروز</small><strong>{{ number_format($metrics['reservationsToday']) }}</strong></article>
-            <article class="admin-stat"><small>پرداخت‌شده</small><strong>{{ number_format($metrics['paidToday']) }}</strong></article>
-        </section>
-        <section class="admin-panels">
-            <article class="admin-panel">
-                <h2>آخرین سفارش‌ها</h2><p>داده‌ی واقعی همین رستوران؛ بدون mock.</p>
-                <div class="admin-orders">
-                    @forelse($recentOrders as $order)
-                        @php($statusLabel = match($order->status->value) {
-                            'pending' => 'در انتظار',
-                            'confirmed' => 'تأیید شده',
-                            'preparing' => 'در حال آماده‌سازی',
-                            'ready' => 'آماده',
-                            'served' => 'سرو شده',
-                            'out_for_delivery' => 'در مسیر',
-                            'delivered' => 'تحویل شد',
-                            'completed' => 'تکمیل شده',
-                            'cancelled' => 'لغو شده',
-                            default => $order->status->value,
-                        })
-                        <div class="admin-order-row">
-                            <div><strong>{{ $order->order_number }}</strong><span> · {{ $order->customer?->name ?: 'مهمان' }} @if($order->table) · میز {{ $order->table->number }} @endif</span></div>
-                            <span>{{ number_format((int) $order->total) }}</span>
-                            <span class="admin-badge">{{ $statusLabel }}</span>
-                        </div>
-                    @empty
-                        <div class="admin-empty">هنوز سفارشی ثبت نشده است.</div>
-                    @endforelse
-                </div>
-            </article>
-            <article class="admin-panel">
-                <h2>مسیرهای سریع</h2><p>کارهای پرتکرار باید یک لمس فاصله داشته باشند.</p>
-                <div class="admin-orders">
-                    <div class="admin-order-row"><strong>سفارش‌ها</strong><a class="admin-badge" href="#">باز کردن</a></div>
-                    <div class="admin-order-row"><strong>میزها و QR</strong><a class="admin-badge" href="#">باز کردن</a></div>
-                    <div class="admin-order-row"><strong>منوی مشتری</strong><a class="admin-badge" href="{{ route('menu.index') }}">مشاهده</a></div>
-                </div>
-            </article>
-        </section>
-    </main>
-    <nav class="admin-mobile-nav" aria-label="ناوبری سریع">
-        <a class="is-active" href="{{ route('admin.dashboard', $restaurant) }}">داشبورد</a>
-        <a href="#">سفارش</a><a href="#">آشپزخانه</a><a href="#">میزها</a>
-    </nav>
+@section('content')
+<div class="admin-page-head">
+    <div>
+        <p class="admin-kicker">اتاق عملیات</p>
+        <h1>{{ $restaurant->name }}</h1>
+        <p>{{ $user->name ?: 'مدیر' }} · نمای امروز کسب‌وکار</p>
+    </div>
+    <form method="POST" action="{{ route('admin.logout') }}">
+        @csrf
+        <button class="admin-logout" type="submit">خروج</button>
+    </form>
 </div>
+
+<section class="admin-metrics" aria-label="شاخص‌های امروز">
+    @foreach([
+        ['سفارش امروز', $metrics['ordersToday']],
+        ['فروش امروز', number_format($metrics['revenueToday']).' '.$restaurant->currency],
+        ['پرداخت‌شده', number_format($metrics['paidToday']).' '.$restaurant->currency],
+        ['سفارش باز', $metrics['openOrders']],
+        ['میز مشغول', $metrics['activeTables']],
+        ['منوی فعال', $metrics['menuCount']],
+        ['رزرو امروز', $metrics['reservationsToday']],
+        ['تحویل باز', $metrics['openDeliveries']],
+    ] as [$label, $value])
+        <article class="admin-metric">
+            <span>{{ $label }}</span>
+            <strong>{{ $value }}</strong>
+        </article>
+    @endforeach
+</section>
+
+<section class="admin-grid admin-grid--main">
+    <article class="admin-panel" id="orders">
+        <div class="admin-panel__head">
+            <div><span class="admin-kicker">آخرین سفارش‌ها</span><h2>Order stream</h2></div>
+            <span>{{ $recentOrders->count() }} مورد</span>
+        </div>
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>شماره</th><th>مشتری</th><th>میز</th><th>مبلغ</th><th>وضعیت</th></tr></thead>
+                <tbody>
+                @forelse($recentOrders as $order)
+                    @php($statusLabel = match($order->status->value) {
+                        'pending' => 'در انتظار',
+                        'confirmed' => 'تأیید شده',
+                        'preparing' => 'در حال آماده‌سازی',
+                        'ready' => 'آماده',
+                        'served' => 'سرو شده',
+                        'out_for_delivery' => 'در مسیر',
+                        'delivered' => 'تحویل شد',
+                        'completed' => 'تکمیل شده',
+                        'cancelled' => 'لغو شده',
+                        default => $order->status->value,
+                    })
+                    <tr>
+                        <td>{{ $order->order_number }}</td>
+                        <td>{{ $order->customer?->name ?: 'مهمان' }}</td>
+                        <td>{{ $order->table?->number ?: '—' }}</td>
+                        <td>{{ number_format((int) $order->total) }}</td>
+                        <td><span class="admin-status">{{ $statusLabel }}</span></td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5">هنوز سفارشی ثبت نشده است.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="admin-panel" id="kitchen">
+        <div class="admin-panel__head">
+            <div><span class="admin-kicker">آشپزخانه</span><h2>Kitchen queue</h2></div>
+            <span>{{ $kitchenQueue->count() }} در صف</span>
+        </div>
+        <div class="admin-queue">
+            @forelse($kitchenQueue as $order)
+                <div class="admin-queue__item">
+                    <div>
+                        <strong>{{ $order->order_number }}</strong>
+                        <span>{{ $order->table?->number ? 'میز '.$order->table->number : 'بیرون‌بر' }}</span>
+                    </div>
+                    <b>{{ $order->items->count() }} آیتم</b>
+                </div>
+            @empty
+                <p>صف آشپزخانه خلوت است.</p>
+            @endforelse
+        </div>
+    </article>
+</section>
+
+<section class="admin-panel" id="tables">
+    <div class="admin-panel__head">
+        <div><span class="admin-kicker">Floor view</span><h2>میزها و QR</h2></div>
+        <span>{{ $tables->count() }} میز فعال</span>
+    </div>
+    <div class="admin-tables-grid">
+        @foreach($tables as $table)
+            <article class="admin-table-card {{ in_array($table->id, $occupiedTableIds, true) ? 'is-occupied' : '' }}">
+                <span>میز {{ $table->number }}</span>
+                <strong>{{ in_array($table->id, $occupiedTableIds, true) ? 'مشغول' : 'آزاد' }}</strong>
+                <small>{{ $table->capacity }} نفر · {{ $table->qrCode?->is_active ? 'QR فعال' : 'QR غیرفعال' }}</small>
+            </article>
+        @endforeach
+    </div>
+</section>
+
+<section class="admin-panel" id="sales">
+    <div class="admin-panel__head">
+        <div><span class="admin-kicker">۷ روز اخیر</span><h2>Sales rhythm</h2></div>
+    </div>
+    <div class="admin-sales">
+        @php($maxRevenue = max(1, collect($dailySales)->max('revenue')))
+        @foreach($dailySales as $day)
+            <div class="admin-sales__day">
+                <span>{{ $day['label'] }}</span>
+                <div class="admin-sales__bar"><i style="height:{{ min(100, max(6, ($day['revenue'] / $maxRevenue) * 100)) }}%"></i></div>
+                <small>{{ number_format($day['revenue']) }}</small>
+            </div>
+        @endforeach
+    </div>
+</section>
 @endsection
