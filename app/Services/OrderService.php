@@ -34,12 +34,13 @@ class OrderService
         $type = $this->resolveOrderType($data['order_type'] ?? null);
         $idempotencyKey = $this->normalizeIdempotencyKey($data['idempotency_key'] ?? null);
         $requestHash = $idempotencyKey ? $this->requestHash($type, $data) : null;
+        $previousRequestHash = $idempotencyKey ? $this->requestHash($type, $data, true, false) : null;
         $legacyRequestHash = $idempotencyKey ? $this->requestHash($type, $data, false, false) : null;
 
         if ($idempotencyKey) {
             $existing = $this->findByIdempotencyKey($restaurant, $idempotencyKey);
             if ($existing) {
-                return $this->returnOrRejectIdempotent($existing, $requestHash, $legacyRequestHash);
+                return $this->returnOrRejectIdempotent($existing, $requestHash, $legacyRequestHash, $previousRequestHash);
             }
         }
 
@@ -220,7 +221,7 @@ class OrderService
                 throw $exception;
             }
 
-            return $this->returnOrRejectIdempotent($existing, $requestHash, $legacyRequestHash);
+            return $this->returnOrRejectIdempotent($existing, $requestHash, $legacyRequestHash, $previousRequestHash);
         }
     }
 
@@ -584,12 +585,14 @@ class OrderService
     private function returnOrRejectIdempotent(
         Order $order,
         ?string $requestHash,
-        ?string $legacyRequestHash = null
+        ?string $legacyRequestHash = null,
+        ?string $previousRequestHash = null
     ): Order {
         $hashMatches = $requestHash !== null && $order->idempotency_hash === $requestHash;
         $legacyHashMatches = $legacyRequestHash !== null && $order->idempotency_hash === $legacyRequestHash;
+        $previousHashMatches = $previousRequestHash !== null && $order->idempotency_hash === $previousRequestHash;
 
-        if (!$hashMatches && !$legacyHashMatches) {
+        if (!$hashMatches && !$legacyHashMatches && !$previousHashMatches) {
             throw ValidationException::withMessages([
                 'idempotency_key' => 'This idempotency key has already been used for a different order payload.',
             ]);

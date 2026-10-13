@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     protected $fillable = [
-        'restaurant_id','customer_id','restaurant_table_id','customer_address_id',
+        'restaurant_id','customer_id','restaurant_table_id','customer_address_id','delivery_zone_id',
         'order_number','idempotency_key','idempotency_hash','public_token','order_type','status',
         'subtotal','discount','tax','delivery_fee','service_charge','total',
         'customer_note','confirmed_at','completed_at','cancelled_at',
@@ -22,6 +22,7 @@ class Order extends Model
     {
         return [
             'order_type'=>OrderType::class,'status'=>OrderStatus::class,
+            'delivery_zone_id'=>'integer',
             'subtotal'=>'integer','discount'=>'integer','tax'=>'integer',
             'delivery_fee'=>'integer','service_charge'=>'integer','total'=>'integer',
             'confirmed_at'=>'datetime','completed_at'=>'datetime','cancelled_at'=>'datetime',
