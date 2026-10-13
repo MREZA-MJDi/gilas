@@ -1,14 +1,14 @@
 <?php
 
-use App\\Http\\Controllers\\Admin\\AuthController as AdminAuthController;
-use App\\Http\\Controllers\\Admin\\DashboardController as AdminDashboardController;
-use App\\Http\\Controllers\\Customer\\OrderTrackingController;
-use App\\Http\\Controllers\\Customer\\PublicMenuController;
-use App\\Http\\Controllers\\Customer\\PublicMenuItemController;
-use App\\Http\\Controllers\\Customer\\PublicPageController;
-use App\\Http\\Controllers\\Customer\\TableOrderingController;
-use App\\Http\\Controllers\\HomeController;
-use Illuminate\\Support\\Facades\\Route;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Customer\OrderTrackingController;
+use App\Http\Controllers\Customer\PublicMenuController;
+use App\Http\Controllers\Customer\PublicMenuItemController;
+use App\Http\Controllers\Customer\PublicPageController;
+use App\Http\Controllers\Customer\TableOrderingController;
+use App\Http\Controllers\HomeController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 
