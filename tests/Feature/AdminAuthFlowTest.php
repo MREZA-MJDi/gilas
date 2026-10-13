@@ -81,4 +81,32 @@ class AdminAuthFlowTest extends TestCase
         $this->get(route('admin.dashboard.overview', $restaurant))
             ->assertForbidden();
     }
+
+    public function test_member_can_render_dashboard_at_legacy_and_resource_urls(): void
+    {
+        $user = User::factory()->create();
+
+        $restaurant = Restaurant::create([
+            'name' => 'خانه گیلاسی',
+            'slug' => 'dashboard-render',
+            'status' => 'active',
+        ]);
+
+        $user->restaurants()->attach($restaurant->id, [
+            'role' => RestaurantUserRole::Owner->value,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.dashboard', $restaurant))
+            ->assertOk()
+            ->assertSee('Order stream')
+            ->assertSee('Kitchen queue')
+            ->assertSee('Sales rhythm');
+
+        $this->get(route('admin.dashboard.overview', $restaurant))
+            ->assertOk()
+            ->assertSee('Order stream');
+    }
+
 }
