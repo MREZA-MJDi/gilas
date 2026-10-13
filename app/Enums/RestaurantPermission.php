@@ -15,6 +15,7 @@ enum RestaurantPermission: string
     case ViewTables = 'tables.view';
     case ManageDelivery = 'delivery.manage';
     case ViewDelivery = 'delivery.view';
+    case ManageCouriers = 'couriers.manage';
     case ManageReservations = 'reservations.manage';
     case ViewReports = 'reports.view';
     case ManageStaff = 'staff.manage';

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\DeliveryStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Delivery extends Model
 {
@@ -20,4 +21,5 @@ class Delivery extends Model
 
     public function order(): BelongsTo { return $this->belongsTo(Order::class); }
     public function courier(): BelongsTo { return $this->belongsTo(Courier::class); }
+    public function statusHistories(): HasMany { return $this->hasMany(DeliveryStatusHistory::class)->orderBy('created_at'); }
 }

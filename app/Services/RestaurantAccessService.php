@@ -35,9 +35,9 @@ class RestaurantAccessService
     {
         return match ($role) {
             RestaurantUserRole::Owner => RestaurantPermission::cases(),
-            RestaurantUserRole::Manager => array_values(array_diff(
+            RestaurantUserRole::Manager => array_values(array_filter(
                 RestaurantPermission::cases(),
-                []
+                fn (RestaurantPermission $permission) => $permission !== RestaurantPermission::ManageStaff
             )),
             RestaurantUserRole::Waiter => [
                 RestaurantPermission::ViewOrders,

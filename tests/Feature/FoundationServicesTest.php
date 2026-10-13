@@ -92,9 +92,18 @@ class FoundationServicesTest extends TestCase
             itemName: 'لاته'
         );
 
+        $zone = $restaurant->deliveryZones()->create([
+            'name' => 'محدوده آزمایش',
+            'min_order_amount' => 0,
+            'delivery_fee' => 0,
+            'estimated_minutes' => 45,
+            'is_active' => true,
+        ]);
+
         $order = app(OrderService::class)->create($restaurant, [
             'customer_id' => $customer->id,
             'customer_address_id' => $address->id,
+            'delivery_zone_id' => $zone->id,
             'order_type' => OrderType::Delivery,
             'customer_note' => 'بدون قند',
             'items' => [[
