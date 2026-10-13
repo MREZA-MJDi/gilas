@@ -33,11 +33,12 @@ class OrderService
         $type = $this->resolveOrderType($data['order_type'] ?? null);
         $idempotencyKey = $this->normalizeIdempotencyKey($data['idempotency_key'] ?? null);
         $requestHash = $idempotencyKey ? $this->requestHash($type, $data) : null;
+        $legacyRequestHash = $idempotencyKey ? $this->requestHash($type, $data, false) : null;
 
         if ($idempotencyKey) {
             $existing = $this->findByIdempotencyKey($restaurant, $idempotencyKey);
             if ($existing) {
-                return $this->returnOrRejectIdempotent($existing, $requestHash);
+                return $this->returnOrRejectIdempotent($existing, $requestHash, $legacyRequestHash);
             }
         }
 
@@ -180,7 +181,7 @@ class OrderService
                 throw $exception;
             }
 
-            return $this->returnOrRejectIdempotent($existing, $requestHash);
+            return $this->returnOrRejectIdempotent($existing, $requestHash, $legacyRequestHash);
         }
     }
 
@@ -462,7 +463,7 @@ class OrderService
         return $key;
     }
 
-    private function requestHash(OrderType $type, array $data): string
+    private function requestHash(OrderType $type, array $data, bool $includePaymentMethod = true): string
     {
         $items = array_map(function (array $item, int $index) {
             $optionIds = array_map('intval', $item['option_value_ids'] ?? []);
@@ -492,7 +493,14 @@ class OrderService
 
         $canonical = [
             'order_type' => $type->value,
-            'payment_method' => $paymentMethod,
+        ];
+
+        // Preserve the pre-payment hash shape for retries of legacy orders.
+        if ($includePaymentMethod) {
+            $canonical['payment_method'] = $paymentMethod;
+        }
+
+        $canonical += [
             'customer_id' => $data['customer_id'] ?? null,
             'restaurant_table_id' => $data['restaurant_table_id'] ?? null,
             'customer_address_id' => $data['customer_address_id'] ?? null,
@@ -513,15 +521,21 @@ class OrderService
             ->first();
     }
 
-    private function returnOrRejectIdempotent(Order $order, ?string $requestHash): Order
-    {
-        if ($requestHash === null || $order->idempotency_hash !== $requestHash) {
+    private function returnOrRejectIdempotent(
+        Order $order,
+        ?string $requestHash,
+        ?string $legacyRequestHash = null
+    ): Order {
+        $hashMatches = $requestHash !== null && $order->idempotency_hash === $requestHash;
+        $legacyHashMatches = $legacyRequestHash !== null && $order->idempotency_hash === $legacyRequestHash;
+
+        if (!$hashMatches && !$legacyHashMatches) {
             throw ValidationException::withMessages([
                 'idempotency_key' => 'This idempotency key has already been used for a different order payload.',
             ]);
         }
 
-        return $order->load(['items.options', 'statusHistory']);
+        return $order->load(['items.options', 'statusHistory', 'payment']);
     }
 
     private function normalizeOptionValueIds(array $ids, int $index): array
