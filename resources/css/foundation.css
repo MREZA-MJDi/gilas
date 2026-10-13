@@ -24,6 +24,14 @@
     --bg:var(--c-bg); --shell-gutter:clamp(14px,3vw,40px); --shell-max:1440px;
     --radius-panel:28px; --radius-card:20px; --tap-target:44px;
     --z-content:1; --z-sticky:30; --z-overlay:70; --z-toast:100;
+
+    /* Compatibility aliases for the restored admin/customer screens. */
+    --c-paper:var(--c-bg); --c-ink:var(--c-text);
+    --text:var(--c-text); --muted:var(--c-muted); --line:var(--line-soft);
+    --background:var(--c-bg);
+    --shadow-soft:0 16px 42px rgba(36,51,49,.09);
+    --shadow-card:0 28px 80px rgba(36,51,49,.12);
+    --radius-xl:28px; --radius-lg:20px;
 }
 
 @layer base {
