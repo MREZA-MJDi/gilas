@@ -182,6 +182,15 @@ class CustomerOrderingFlowTest extends TestCase
             ->assertJsonPath('data.status', OrderStatus::Pending->value)
             ->assertJsonPath('data.total', 180000);
 
+        $orderId = $response->json('data.order_id');
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $orderId,
+            'method' => 'cashier',
+            'status' => 'pending',
+            'amount' => 180000,
+        ]);
+
         $this->assertDatabaseHas('orders', [
             'restaurant_id' => $restaurant->id,
             'restaurant_table_id' => $table->id,
@@ -200,5 +209,6 @@ class CustomerOrderingFlowTest extends TestCase
         );
 
         $this->assertSame(1, $restaurant->orders()->count());
+        $this->assertDatabaseCount('payments', 1);
     }
 }

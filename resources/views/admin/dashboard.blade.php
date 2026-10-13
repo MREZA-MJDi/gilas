@@ -41,7 +41,7 @@
         </div>
         <div class="admin-table-wrap">
             <table class="admin-table">
-                <thead><tr><th>شماره</th><th>مشتری</th><th>میز</th><th>مبلغ</th><th>وضعیت</th></tr></thead>
+                <thead><tr><th>شماره</th><th>مشتری</th><th>میز</th><th>مبلغ</th><th>وضعیت سفارش</th><th>پرداخت</th></tr></thead>
                 <tbody>
                 @forelse($recentOrders as $order)
                     @php($statusLabel = match($order->status->value) {
@@ -62,9 +62,26 @@
                         <td>{{ $order->table?->number ?: '—' }}</td>
                         <td>{{ number_format((int) $order->total) }}</td>
                         <td><span class="admin-status">{{ $statusLabel }}</span></td>
+                        <td>
+                            @if(!$order->payment)
+                                <span class="admin-payment-state">ثبت‌نشده</span>
+                            @elseif($order->payment->status?->value === 'paid')
+                                <span class="admin-payment-state is-paid">پرداخت‌شده</span>
+                            @elseif($order->payment->method?->isCashierSettlement())
+                                <span class="admin-payment-state">در انتظار صندوق</span>
+                                @can('markCashierPaid', $order->payment)
+                                    <form method="POST" action="{{ route('admin.payments.cashier-paid', [$restaurant->slug, $order->payment->id]) }}" class="admin-payment-form">
+                                        @csrf
+                                        <button type="submit" class="admin-payment-action">ثبت پرداخت</button>
+                                    </form>
+                                @endcan
+                            @else
+                                <span class="admin-payment-state">در انتظار پرداخت آنلاین</span>
+                            @endif
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5">هنوز سفارشی ثبت نشده است.</td></tr>
+                    <tr><td colspan="6">هنوز سفارشی ثبت نشده است.</td></tr>
                 @endforelse
                 </tbody>
             </table>

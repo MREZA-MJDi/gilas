@@ -82,7 +82,7 @@ class DashboardController extends Controller
             ->count();
 
         $recentOrders = $restaurant->orders()
-            ->with(['customer', 'table', 'items'])
+            ->with(['customer', 'table', 'items', 'payment'])
             ->latest()
             ->limit(8)
             ->get();

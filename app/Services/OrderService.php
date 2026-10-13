@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Events\OrderCreated;
 use App\Enums\OrderType;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\MenuItem;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Restaurant;
 use App\Models\RestaurantTable;
 use App\Models\User;
@@ -30,11 +33,12 @@ class OrderService
         $type = $this->resolveOrderType($data['order_type'] ?? null);
         $idempotencyKey = $this->normalizeIdempotencyKey($data['idempotency_key'] ?? null);
         $requestHash = $idempotencyKey ? $this->requestHash($type, $data) : null;
+        $legacyRequestHash = $idempotencyKey ? $this->requestHash($type, $data, false) : null;
 
         if ($idempotencyKey) {
             $existing = $this->findByIdempotencyKey($restaurant, $idempotencyKey);
             if ($existing) {
-                return $this->returnOrRejectIdempotent($existing, $requestHash);
+                return $this->returnOrRejectIdempotent($existing, $requestHash, $legacyRequestHash);
             }
         }
 
@@ -150,12 +154,17 @@ class OrderService
                     }
                 }
 
+                $this->createPendingPayment(
+                    $order,
+                    $data['payment_method'] ?? PaymentMethod::Cashier->value
+                );
+
                 $order->statusHistory()->create([
                     'from_status' => null,
                     'to_status' => OrderStatus::Pending,
                 ]);
 
-                return $order->load(['items.options', 'statusHistory']);
+                return $order->load(['items.options', 'statusHistory', 'payment']);
             });
 
             event(new OrderCreated($order->id));
@@ -172,7 +181,7 @@ class OrderService
                 throw $exception;
             }
 
-            return $this->returnOrRejectIdempotent($existing, $requestHash);
+            return $this->returnOrRejectIdempotent($existing, $requestHash, $legacyRequestHash);
         }
     }
 
@@ -293,6 +302,18 @@ class OrderService
             ]);
         }
 
+        $paymentMethod = $data['payment_method'] ?? PaymentMethod::Cashier;
+
+        try {
+            $paymentMethod = $paymentMethod instanceof PaymentMethod
+                ? $paymentMethod
+                : PaymentMethod::from((string) $paymentMethod);
+        } catch (\ValueError) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'The selected payment method is invalid.',
+            ]);
+        }
+
         $customerId = $data['customer_id'] ?? null;
 
         if ($customerId !== null) {
@@ -386,6 +407,26 @@ class OrderService
         ]);
     }
 
+    private function createPendingPayment(Order $order, mixed $method): Payment
+    {
+        try {
+            $paymentMethod = $method instanceof PaymentMethod
+                ? $method
+                : PaymentMethod::from((string) $method);
+        } catch (\ValueError) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'The selected payment method is invalid.',
+            ]);
+        }
+
+        return $order->payment()->create([
+            'method' => $paymentMethod->value,
+            'status' => PaymentStatus::Pending,
+            'amount' => $order->total,
+            'paid_at' => null,
+        ]);
+    }
+
     private function resolveOrderType(mixed $value): OrderType
     {
         if ($value instanceof OrderType) {
@@ -422,7 +463,7 @@ class OrderService
         return $key;
     }
 
-    private function requestHash(OrderType $type, array $data): string
+    private function requestHash(OrderType $type, array $data, bool $includePaymentMethod = true): string
     {
         $items = array_map(function (array $item, int $index) {
             $optionIds = array_map('intval', $item['option_value_ids'] ?? []);
@@ -445,8 +486,21 @@ class OrderService
             json_encode($b, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)
         ));
 
+        $paymentMethod = $data['payment_method'] ?? PaymentMethod::Cashier->value;
+        $paymentMethod = $paymentMethod instanceof PaymentMethod
+            ? $paymentMethod->value
+            : (string) $paymentMethod;
+
         $canonical = [
             'order_type' => $type->value,
+        ];
+
+        // Preserve the pre-payment hash shape for retries of legacy orders.
+        if ($includePaymentMethod) {
+            $canonical['payment_method'] = $paymentMethod;
+        }
+
+        $canonical += [
             'customer_id' => $data['customer_id'] ?? null,
             'restaurant_table_id' => $data['restaurant_table_id'] ?? null,
             'customer_address_id' => $data['customer_address_id'] ?? null,
@@ -467,15 +521,21 @@ class OrderService
             ->first();
     }
 
-    private function returnOrRejectIdempotent(Order $order, ?string $requestHash): Order
-    {
-        if ($requestHash === null || $order->idempotency_hash !== $requestHash) {
+    private function returnOrRejectIdempotent(
+        Order $order,
+        ?string $requestHash,
+        ?string $legacyRequestHash = null
+    ): Order {
+        $hashMatches = $requestHash !== null && $order->idempotency_hash === $requestHash;
+        $legacyHashMatches = $legacyRequestHash !== null && $order->idempotency_hash === $legacyRequestHash;
+
+        if (!$hashMatches && !$legacyHashMatches) {
             throw ValidationException::withMessages([
                 'idempotency_key' => 'This idempotency key has already been used for a different order payload.',
             ]);
         }
 
-        return $order->load(['items.options', 'statusHistory']);
+        return $order->load(['items.options', 'statusHistory', 'payment']);
     }
 
     private function normalizeOptionValueIds(array $ids, int $index): array
