@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\DeliveryStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -33,7 +34,7 @@ class OrderService
         $type = $this->resolveOrderType($data['order_type'] ?? null);
         $idempotencyKey = $this->normalizeIdempotencyKey($data['idempotency_key'] ?? null);
         $requestHash = $idempotencyKey ? $this->requestHash($type, $data) : null;
-        $legacyRequestHash = $idempotencyKey ? $this->requestHash($type, $data, false) : null;
+        $legacyRequestHash = $idempotencyKey ? $this->requestHash($type, $data, false, false) : null;
 
         if ($idempotencyKey) {
             $existing = $this->findByIdempotencyKey($restaurant, $idempotencyKey);
@@ -48,6 +49,7 @@ class OrderService
                 $items = $this->prepareMenuItems($restaurant, $data['items'] ?? []);
 
                 $settings = $this->settingsFor($restaurant);
+                $deliveryZone = null;
                 $pricedItems = [];
                 $subtotal = 0;
 
@@ -104,11 +106,31 @@ class OrderService
                     ];
                 }
 
+                if ($type === OrderType::Delivery) {
+                    $zoneId = $this->positiveInteger($data['delivery_zone_id'] ?? null, 'delivery_zone_id');
+                    $deliveryZone = $restaurant->deliveryZones()
+                        ->whereKey($zoneId)
+                        ->where('is_active', true)
+                        ->first();
+
+                    if (!$deliveryZone) {
+                        throw ValidationException::withMessages([
+                            'delivery_zone_id' => 'The selected delivery zone is unavailable for this restaurant.',
+                        ]);
+                    }
+
+                    if ($subtotal < (int) $deliveryZone->min_order_amount) {
+                        throw ValidationException::withMessages([
+                            'items' => 'The order does not meet the minimum for the selected delivery zone.',
+                        ]);
+                    }
+                }
+
                 $discount = 0;
                 $taxBase = max(0, $subtotal - $discount);
                 $tax = $this->percentageAmount($taxBase, $settings->tax_percent);
                 $serviceCharge = $this->percentageAmount($taxBase, $settings->service_charge_percent);
-                $deliveryFee = 0;
+                $deliveryFee = (int) ($deliveryZone?->delivery_fee ?? 0);
                 $total = $taxBase + $tax + $serviceCharge + $deliveryFee;
 
                 if ($settings->min_order_amount > 0 && $subtotal < $settings->min_order_amount) {
@@ -121,6 +143,7 @@ class OrderService
                     'customer_id' => $data['customer_id'] ?? null,
                     'restaurant_table_id' => $data['restaurant_table_id'] ?? null,
                     'customer_address_id' => $data['customer_address_id'] ?? null,
+                    'delivery_zone_id' => $deliveryZone?->id,
                     'order_number' => $this->generateOrderNumber(),
                     'idempotency_key' => $idempotencyKey,
                     'public_token' => $this->generatePublicTrackingToken(),
@@ -158,6 +181,22 @@ class OrderService
                     $order,
                     $data['payment_method'] ?? PaymentMethod::Cashier->value
                 );
+
+                if ($type === OrderType::Delivery) {
+                    $address = CustomerAddress::query()->findOrFail((int) $data['customer_address_id']);
+                    $addressSnapshot = implode(', ', array_filter([
+                        $address->recipient_name,
+                        $address->phone,
+                        $address->address,
+                        filled($address->postal_code) ? 'کدپستی '.$address->postal_code : null,
+                    ]));
+
+                    $order->delivery()->create([
+                        'status' => DeliveryStatus::Pending,
+                        'delivery_address_snapshot' => $addressSnapshot,
+                        'customer_note' => $data['customer_note'] ?? null,
+                    ]);
+                }
 
                 $order->statusHistory()->create([
                     'from_status' => null,
@@ -379,6 +418,18 @@ class OrderService
                     'customer_address_id' => 'The selected address does not belong to the customer.',
                 ]);
             }
+
+            $zoneId = $this->positiveInteger($data['delivery_zone_id'] ?? null, 'delivery_zone_id');
+            $validZone = $restaurant->deliveryZones()
+                ->whereKey($zoneId)
+                ->where('is_active', true)
+                ->exists();
+
+            if (!$validZone) {
+                throw ValidationException::withMessages([
+                    'delivery_zone_id' => 'The selected delivery zone is unavailable for this restaurant.',
+                ]);
+            }
         } elseif ($addressId !== null) {
             throw ValidationException::withMessages([
                 'customer_address_id' => 'Only delivery orders may reference a customer address.',
@@ -463,7 +514,12 @@ class OrderService
         return $key;
     }
 
-    private function requestHash(OrderType $type, array $data, bool $includePaymentMethod = true): string
+    private function requestHash(
+        OrderType $type,
+        array $data,
+        bool $includePaymentMethod = true,
+        bool $includeDeliveryZone = true
+    ): string
     {
         $items = array_map(function (array $item, int $index) {
             $optionIds = array_map('intval', $item['option_value_ids'] ?? []);
@@ -498,6 +554,10 @@ class OrderService
         // Preserve the pre-payment hash shape for retries of legacy orders.
         if ($includePaymentMethod) {
             $canonical['payment_method'] = $paymentMethod;
+        }
+
+        if ($includeDeliveryZone) {
+            $canonical['delivery_zone_id'] = $data['delivery_zone_id'] ?? null;
         }
 
         $canonical += [

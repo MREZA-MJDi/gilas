@@ -32,6 +32,7 @@ class Order extends Model
     public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
     public function table(): BelongsTo { return $this->belongsTo(RestaurantTable::class,'restaurant_table_id'); }
     public function address(): BelongsTo { return $this->belongsTo(CustomerAddress::class,'customer_address_id'); }
+    public function deliveryZone(): BelongsTo { return $this->belongsTo(DeliveryZone::class); }
     public function items(): HasMany { return $this->hasMany(OrderItem::class); }
     public function statusHistory(): HasMany { return $this->hasMany(OrderStatusHistory::class); }
     public function delivery(): HasOne { return $this->hasOne(Delivery::class); }
