@@ -23,8 +23,20 @@ class DeliveryOperationsController extends Controller
     {
         $this->assertCanManage($access, request()->user(), $restaurant);
 
-        $deliveries = $restaurant->orders()
-            ->where('order_type', 'delivery')
+        $user = request()->user();
+        $membership = $restaurant->users()
+            ->where('users.id', $user->id)
+            ->wherePivot('is_active', true)
+            ->first();
+
+        $query = $restaurant->orders()->where('order_type', 'delivery');
+
+        // A courier's operational queue must not disclose another courier's deliveries.
+        if ($membership?->pivot?->role === RestaurantUserRole::Courier->value) {
+            $query->whereHas('delivery.courier', fn ($couriers) => $couriers->where('user_id', $user->id));
+        }
+
+        $deliveries = $query
             ->with(['delivery.courier.user', 'delivery.statusHistories.actor', 'customer', 'items'])
             ->latest()
             ->paginate(50);

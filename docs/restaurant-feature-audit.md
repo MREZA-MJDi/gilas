@@ -1,38 +1,33 @@
-# Gilas restaurant feature audit and backend scope
+# Gilas feature inventory and backend scope
 
-Audit date: 2026-10-13. This review compares the current main tree with open feature branches and pull requests. It distinguishes existing data models from workflows that are actually callable and tested.
+Audit date: 2026-10-13. This review compares `main` with the available feature branches and open pull requests. It distinguishes data models from end-to-end workflows.
 
-## Workflows already present on main
+## Customer-facing capabilities
 - Public brand/story/location/experience pages and menu/category/item browsing.
-- QR-token table menu and dine-in order submission.
-- Server-side menu pricing, variants/options validation, order idempotency, public tracking tokens and status polling.
-- Restaurant settings, weekly opening hours, tables and QR tokens.
-- Customer and address models, reservations, couriers, delivery zones, payments and delivery records.
-- Order status domain service/history, role permissions and new-order staff notifications.
-- Payment record creation and cashier settlement authorization.
+- QR table ordering with server-side price resolution, variants/options, idempotency, order status tracking and public tracking tokens.
+- Public pickup/delivery checkout with customer/address creation, server-side total, restaurant-owned active delivery zone and minimum order, delivery fee, pending payment record and delivery-address snapshot.
+- Reservation request submission with Persian/Arabic digit normalization, configured opening hours, pending state and staff confirmation.
+- Online payment intentionally disabled until a real gateway/session, signed callback/webhook and reconciliation/failure flow are integrated.
 
-## Workflows added by this branch
-- Public pickup checkout with server-side pricing, customer persistence, pending payment creation and idempotency.
-- Public delivery checkout with active restaurant-owned zone validation, zone minimum, server-calculated delivery fee, order-to-zone relation and delivery address snapshot.
-- Reservation submission with customer persistence, pending status, estimated 90-minute duration, configured opening-hours checks and Persian/Arabic digit normalization.
-- Role-protected order status endpoint using the existing transition service and audit history.
-- Role-protected reservation status endpoint with explicit lifecycle transitions, table capacity checks and overlapping-booking detection.
-- Regression tests for checkout math, idempotency, cross-restaurant IDs, reservation hours/settings, role boundaries, transition guards and rollback/no-orphan records.
+## Staff/operations capabilities
+- Restaurant role/permission checks; owner/manager access separated from kitchen, waiter, cashier, courier and staff roles.
+- Staff order status transitions use the existing domain service and status history.
+- Reservation status transitions, table assignment, table capacity and overlap validation.
+- Restaurant menu/category/item CRUD, image replacement/removal, variant and option/value CRUD, with restaurant scoping and authorization.
+- Courier management, delivery assignment, availability checks, dispatch/pick-up/delivered lifecycle, timestamps, status history and synchronized order transition to `out_for_delivery` and `delivered`.
+- Payment records and authorized cashier settlement.
 
-## Integrations intentionally not faked
-- Online payments are not enabled by checkout until a payment provider/session, signed callback/webhook and failure/reconciliation path are configured.
-- Delivery zones are named operating zones, not GIS polygons or postal coverage rules. The selected zone must be active and belong to the restaurant.
-- Reservation requests begin as pending, for staff confirmation. A calendar UI and automatic seating allocation are not represented as complete.
-- This change does not redesign Blade, CSS or JavaScript UI; UI/UX is intentionally left for the dedicated redesign.
+## Scope boundaries (do not pretend these integrations exist)
+- No real online gateway is configured; cashier settlement only.
+- Delivery zone is a named operating zone, not a GIS boundary or postcode coverage map.
+- Reservation requests are pending and confirmed by staff; there is not yet a customer-facing availability calendar/automatic table allocation.
+- This branch exposes backend routes/APIs only. Blade/CSS/JS UI/UX remains for the separate redesign.
+- Older PRs #4, #6 and #7 are diverged/stale and include legacy presentation/tree-GSAP work; useful logic was ported selectively, so do not merge those branches wholesale.
 
-## Remaining production capabilities to build
-1. Admin CRUD for menu categories/items/variants/options with authorization and image validation.
-2. Courier assignment and delivery lifecycle actions (assigned, dispatched, picked up, delivered), scoped to each restaurant.
-3. Reservation calendar/list/filter UI and staff operational surfaces.
-4. Payment provider integration, reconciliation, receipts and refunds as required.
-5. Restaurant settings/hours management, holidays, timezone-aware cutoffs and pause/resume ordering.
-6. Public endpoint rate limits/abuse controls, queued notification reliability, backups, error reporting and production smoke tests.
-7. Optional: loyalty/club points, coupons, reviews, stock, analytics exports and delivery-provider integrations.
-
-## Branch disposition
-Older feature branches are divergent from main. Do not merge PRs #4, #6 or #7 wholesale: they contain legacy presentation changes and portions of pre-cleanup GSAP/tree assets. The useful backend changes have been ported selectively; retain the tree-free main branch as the source of truth and check path-level diffs before any further integration.
+## Remaining production backlog
+1. Restaurant profile/settings and opening-hours/holiday management screens and services, including timezone-aware cutoffs and scheduled pause/resume.
+2. Reservation list/calendar/search screens and outbound confirmation/cancellation messages.
+3. Online payment provider integration, refunds, receipts and reconciliation.
+4. Inventory/stock, coupons/loyalty, customer reviews and analytics exports if required by product scope.
+5. Operational safeguards: per-endpoint rate limiting, spam/abuse handling, durable queued notifications, backup/restore exercises, observability/error reporting, and production smoke tests.
+6. Deployment and migration verification on the target environment before release.

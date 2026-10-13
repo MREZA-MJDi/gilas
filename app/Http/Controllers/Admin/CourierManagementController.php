@@ -34,6 +34,7 @@ class CourierManagementController extends Controller
         $data = $request->validated();
 
         if (isset($data['user_id'])) {
+            $this->assertUserHasActiveCourierMembership($restaurant, (int) $data['user_id']);
             $this->assertCourierUserIsNotAssignedElsewhere($restaurant, (int) $data['user_id']);
         }
 
@@ -57,6 +58,7 @@ class CourierManagementController extends Controller
         $data = $request->validated();
 
         if (isset($data['user_id'])) {
+            $this->assertUserHasActiveCourierMembership($restaurant, (int) $data['user_id']);
             $this->assertCourierUserIsNotAssignedElsewhere($restaurant, (int) $data['user_id'], $courier->id);
         }
 
@@ -102,6 +104,20 @@ class CourierManagementController extends Controller
             $user && $access->can($user, $restaurant, RestaurantPermission::ManageCouriers),
             403
         );
+    }
+
+    private function assertUserHasActiveCourierMembership(Restaurant $restaurant, int $userId): void
+    {
+        $member = $restaurant->users()
+            ->where('users.id', $userId)
+            ->wherePivot('is_active', true)
+            ->first();
+
+        if (!$member || $member->pivot->role !== 'courier') {
+            throw ValidationException::withMessages([
+                'user_id' => 'The selected user must have an active courier role for this restaurant.',
+            ]);
+        }
     }
 
     private function assertCourierUserIsNotAssignedElsewhere(
