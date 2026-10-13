@@ -107,4 +107,46 @@ class PaymentAuthorizationTest extends TestCase
 
         $this->assertSame(0, DB::table('payment_transactions')->where('payment_id', $payment->id)->count());
     }
+
+    public function test_legacy_cash_payment_method_remains_settleable(): void
+    {
+        $restaurant = Restaurant::create([
+            'name' => 'گیلاس',
+            'slug' => 'gilas-legacy-cash',
+            'status' => 'active',
+        ]);
+
+        $cashier = User::factory()->create();
+        $restaurant->users()->attach($cashier->id, [
+            'role' => RestaurantUserRole::Cashier->value,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'restaurant_id' => $restaurant->id,
+            'order_number' => 'GLS-LEGACY-CASH',
+            'order_type' => 'pickup',
+            'status' => 'pending',
+            'subtotal' => 25000,
+            'total' => 25000,
+        ]);
+
+        $payment = Payment::create([
+            'order_id' => $order->id,
+            'method' => PaymentMethod::Cash,
+            'status' => PaymentStatus::Pending,
+            'amount' => 25000,
+        ]);
+
+        $this->actingAs($cashier)
+            ->post(route('admin.payments.cashier-paid', [$restaurant->slug, $payment->id]))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->id,
+            'method' => 'cash',
+            'status' => PaymentStatus::Paid->value,
+        ]);
+    }
+
 }
