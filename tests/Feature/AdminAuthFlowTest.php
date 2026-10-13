@@ -77,5 +77,8 @@ class AdminAuthFlowTest extends TestCase
             ->get(route('admin.dashboard', $restaurant));
 
         $response->assertForbidden();
+
+        $this->get(route('admin.dashboard.overview', $restaurant))
+            ->assertForbidden();
     }
 }
