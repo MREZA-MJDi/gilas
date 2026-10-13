@@ -58,18 +58,24 @@ class ReservationStatusController extends Controller
                 }
 
                 if (in_array($next, [ReservationStatus::Confirmed, ReservationStatus::Seated], true)) {
+                    $requestedStart = $this->minutesAfterMidnight($reservation->start_time);
+                    $requestedEnd = $this->minutesAfterMidnight($reservation->end_time ?: $reservation->start_time);
                     $conflict = Reservation::query()
                         ->where('restaurant_id', $restaurant->id)
                         ->where('restaurant_table_id', $table->id)
-                        ->where('reservation_date', $reservation->reservation_date->toDateString())
+                        ->whereDate('reservation_date', $reservation->reservation_date->toDateString())
                         ->whereIn('status', [
                             ReservationStatus::Confirmed->value,
                             ReservationStatus::Seated->value,
                         ])
                         ->where('id', '!=', $reservation->id)
-                        ->whereTime('start_time', '<', $reservation->end_time ?: $reservation->start_time)
-                        ->whereTime('end_time', '>', $reservation->start_time)
-                        ->exists();
+                        ->get(['id', 'start_time', 'end_time'])
+                        ->contains(function (Reservation $existing) use ($requestedStart, $requestedEnd): bool {
+                            $existingStart = $this->minutesAfterMidnight($existing->start_time);
+                            $existingEnd = $this->minutesAfterMidnight($existing->end_time ?: $existing->start_time);
+
+                            return $existingStart < $requestedEnd && $existingEnd > $requestedStart;
+                        });
 
                     if ($conflict) {
                         throw ValidationException::withMessages([
@@ -98,6 +104,13 @@ class ReservationStatusController extends Controller
         }
 
         return back()->with('status', 'وضعیت رزرو به‌روزرسانی شد.');
+    }
+
+    private function minutesAfterMidnight(string $time): int
+    {
+        [$hours, $minutes] = array_map('intval', explode(':', substr($time, 0, 5)));
+
+        return ($hours * 60) + $minutes;
     }
 
     private function allowedTransitions(ReservationStatus $current): array
