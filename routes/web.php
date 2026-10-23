@@ -9,10 +9,20 @@ use App\Http\Controllers\Customer\PublicMenuItemController;
 use App\Http\Controllers\Customer\PublicPageController;
 use App\Http\Controllers\Customer\PublicReservationController;
 use App\Http\Controllers\Customer\TableOrderingController;
+use App\Http\Controllers\Customer\QrCartShortcutController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+
+// Friendly compatibility URLs for the resource-based storefront views.
+// All of them use Gilas' restaurant/menu models and existing controllers.
+Route::get('/storefront', HomeController::class)->name('storefront.index');
+Route::get('/shop', [PublicMenuController::class, 'index'])->name('shop.index');
+Route::get('/products', [PublicMenuController::class, 'index'])->name('products.index');
+Route::get('/products/{slug}', [PublicMenuItemController::class, 'show'])
+    ->where('slug', '[A-Za-z0-9_-]+')
+    ->name('products.show');
 
 Route::get('/menu', [PublicMenuController::class, 'index'])->name('menu.index');
 Route::get('/menu/category/{slug}', [PublicMenuController::class, 'category'])
@@ -21,6 +31,12 @@ Route::get('/menu/category/{slug}', [PublicMenuController::class, 'category'])
 Route::get('/menu/item/{slug}', [PublicMenuItemController::class, 'show'])
     ->where('slug', '[A-Za-z0-9_-]+')
     ->name('menu.item');
+
+// A generic cart/checkout route must not create a second order system.
+// It returns customers to the existing QR-table cart when a valid table token
+// is present; otherwise it guides them to the real restaurant menu.
+Route::get('/cart', QrCartShortcutController::class)->name('cart.index');
+Route::get('/checkout', QrCartShortcutController::class)->name('checkout.index');
 
 Route::get('/experience', [PublicPageController::class, 'show'])->defaults('page', 'experience')->name('public.experience');
 Route::get('/reservation', [PublicPageController::class, 'show'])->defaults('page', 'reservation')->name('public.reservation');

@@ -34,7 +34,7 @@ class PublicMenuItemController extends Controller
             ])
             ->firstOrFail();
 
-        return view('customer.menu-item', compact('restaurant', 'item'));
+        return view('store.products.show', compact('restaurant', 'item'));
     }
 
     private function primaryRestaurantOrFail(): Restaurant
