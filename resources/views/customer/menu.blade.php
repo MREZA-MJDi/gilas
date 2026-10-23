@@ -1,52 +1,43 @@
 @extends('layouts.customer')
 
-@section('title', $restaurant->name . ' — منو')
-@section('description', 'منوی آنلاین ' . $restaurant->name)
+@section('title', $restaurant->name . ' — منوی غذا و نوشیدنی')
+@section('description', 'منوی آنلاین ' . $restaurant->name . '؛ دسته‌بندی‌ها، جزئیات غذاها و قیمت‌های ثبت‌شده.')
+
+@php
+    $menuCover = $restaurant->cover_image_path
+        ? \Illuminate\Support\Facades\Storage::disk('public')->url($restaurant->cover_image_path)
+        : null;
+@endphp
 
 @section('content')
-<header class="customer-header">
-    <div class="ui-shell customer-header__inner">
-        <a class="customer-brand" href="{{ route('home') }}">
-            <span class="customer-brand__mark">
-                @if($restaurant->logo_path)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($restaurant->logo_path) }}" alt="" width="42" height="42">
-                @else
-                    <span>{{ mb_substr($restaurant->name, 0, 1) }}</span>
-                @endif
-            </span>
-            <span>
-                <strong>{{ $restaurant->name }}</strong>
-                <small>منوی آنلاین</small>
-            </span>
-        </a>
-        <div class="customer-header__actions">
-            <a href="{{ route('home') }}">خانه</a>
-            @if($restaurant->settings?->reservation_enabled)
-                <a href="{{ route('public.reservation') }}">رزرو</a>
-            @endif
+<main class="gilas-menu-page gilas-page-wrap">
+    <section class="gilas-menu-hero">
+        <div class="gilas-menu-hero__copy">
+            <a class="gilas-breadcrumb" href="{{ route('home') }}">خانه <span aria-hidden="true">/</span> منو</a>
+            <span class="gilas-eyebrow"><span class="gilas-eyebrow__line"></span> از آشپزخانهٔ {{ $restaurant->name }}</span>
+            <h1>منو را ببین.<br><em>با حوصله انتخاب کن.</em></h1>
+            <p>{{ $restaurant->description ?: 'غذاها و نوشیدنی‌های فعال را مرور کن و برای دیدن جزئیات هر مورد وارد صفحهٔ آن شو.' }}</p>
+            <div class="gilas-menu-hero__meta">
+                <span>{{ $categories->count() }} دستهٔ منو</span>
+                <span>قیمت‌ها از اطلاعات ثبت‌شدهٔ رستوران</span>
+            </div>
         </div>
-    </div>
-</header>
-
-<main class="ui-shell public-menu">
-    <section class="public-menu__intro" data-home-reveal>
-        <div>
-            <span class="ui-kicker">منوی خانه گیلاسی</span>
-            <h1>انتخاب خوب،<br>از یک نگاه شروع می‌شود.</h1>
-            <p>{{ $restaurant->description ?: 'طعم‌ها، اندازه‌ها و انتخاب‌های واقعی امروز را ببین و با خیال راحت انتخاب کن.' }}</p>
-        </div>
-        @if($restaurant->cover_image_path)
-            <div class="public-menu__hero-image">
-                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($restaurant->cover_image_path) }}"
-                     alt="{{ $restaurant->name }}"
-                     width="1200" height="750" loading="eager" decoding="async">
+        @if($menuCover)
+            <div class="gilas-menu-hero__visual">
+                <img src="{{ $menuCover }}" alt="{{ $restaurant->name }}" width="1100" height="900" loading="eager" decoding="async">
+                <span class="gilas-menu-hero__visual-label">{{ $restaurant->name }}</span>
+            </div>
+        @else
+            <div class="gilas-menu-hero__visual gilas-menu-hero__visual--empty">
+                <span>{{ mb_substr($restaurant->name, 0, 1) }}</span>
+                <small>تصویر کاور را از تنظیمات رستوران ثبت کن</small>
             </div>
         @endif
     </section>
 
-    <nav class="public-menu__filters" aria-label="دسته‌های منو">
-        <a href="{{ route('menu.index') }}" class="{{ blank($selectedSlug) ? 'is-active' : '' }}">همه</a>
-        @foreach($menu as $category)
+    <nav class="gilas-menu-filter" aria-label="دسته‌بندی غذاها">
+        <a href="{{ route('menu.index') }}" class="{{ blank($selectedSlug) ? 'is-active' : '' }}">همهٔ دسته‌ها</a>
+        @foreach($categories as $category)
             <a href="{{ route('menu.category', ['slug' => $category->slug]) }}"
                class="{{ $selectedSlug === $category->slug ? 'is-active' : '' }}">
                 {{ $category->name }}
@@ -54,28 +45,33 @@
         @endforeach
     </nav>
 
-    <div class="public-menu__sections">
+    <div class="gilas-menu-results">
         @forelse($menu as $category)
-            <section class="public-menu-category" id="category-{{ $category->slug }}">
-                <div class="public-menu-category__heading">
+            <section class="gilas-menu-category" id="category-{{ $category->slug }}">
+                <div class="gilas-menu-category__heading">
                     <div>
-                        <span class="ui-kicker">دسته</span>
+                        <span class="gilas-eyebrow"><span class="gilas-eyebrow__line"></span> دستهٔ منو</span>
                         <h2>{{ $category->name }}</h2>
                     </div>
-                    <span>{{ $category->items->count() }} آیتم</span>
+                    <span class="gilas-menu-category__count">{{ $category->items->count() }} مورد</span>
                 </div>
 
-                <div class="public-product-grid">
-                    @foreach($category->items as $item)
-                        <x-menu-item-card :item="$item" :restaurant="$restaurant" :category-name="$category->name" />
-                    @endforeach
-                </div>
+                @if($category->items->isNotEmpty())
+                    <div class="public-product-grid">
+                        @foreach($category->items as $item)
+                            <x-menu-item-card :item="$item" :restaurant="$restaurant" :category-name="$category->name" />
+                        @endforeach
+                    </div>
+                @else
+                    <div class="gilas-empty-inline">این دسته هنوز غذای فعالی برای نمایش ندارد.</div>
+                @endif
             </section>
         @empty
-            <section class="public-menu-empty">
-                <span class="ui-kicker">منو</span>
-                <h2>هنوز آیتمی برای نمایش نداریم.</h2>
-                <p>آیتم‌ها را از مدیریت منو وارد کن تا این صفحه به‌صورت مستقیم از دیتابیس نمایش داده شود.</p>
+            <section class="gilas-empty-state">
+                <span class="gilas-empty-state__mark">✳</span>
+                <h2>منو هنوز آماده نشده است.</h2>
+                <p>دسته‌ها و غذاهای منتشرشده از پنل رستوران به‌صورت خودکار اینجا قرار می‌گیرند.</p>
+                <a class="gilas-button gilas-button--dark" href="{{ route('public.location') }}">اطلاعات رستوران</a>
             </section>
         @endforelse
     </div>
