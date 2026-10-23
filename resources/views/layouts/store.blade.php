@@ -88,6 +88,7 @@
             <nav class="gilas-site-footer__links" aria-label="دسترسی سریع">
                 <strong>دسترسی سریع</strong>
                 <a href="{{ route('menu.index') }}">منوی غذا و نوشیدنی</a>
+                <a href="{{ route('public.experience') }}">تجربهٔ خانه</a>
                 <a href="{{ route('public.reservation') }}">رزرو و هماهنگی میز</a>
                 <a href="{{ route('public.story') }}">داستان خانه</a>
                 <a href="{{ route('public.location') }}">آدرس و مسیریابی</a>

@@ -64,7 +64,7 @@
                     <div class="gilas-hero__shade" aria-hidden="true"></div>
                     <div class="gilas-hero__frame" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
                     <div class="gilas-hero__content">
-                        <p class="gilas-hero__eyebrow"><span class="gilas-hero__eyebrow-line"></span> GILAS / TASTE & TABLE</p>
+                        <p class="gilas-hero__eyebrow"><span class="gilas-hero__eyebrow-line"></span> CAFE / KITCHEN / TABLE</p>
                         <h1 class="gilas-hero__title">یک مکثِ خوش‌طعم،<br><span>{{ $slide['name'] }}</span></h1>
                         <p class="gilas-hero__description">{{ $slide['description'] }}</p>
                         <div class="gilas-hero__actions">
@@ -83,7 +83,7 @@
         </div>
 
         <div class="gilas-hero__rail">
-            <span class="gilas-hero__rail-label">GILAS / FLAVOR / FEELING</span>
+            <span class="gilas-hero__rail-label">TASTE / TABLE / FEELING</span>
             <div class="gilas-hero__progress" aria-hidden="true"><span data-hero-progress></span></div>
             @if($heroSlides->count() > 1)
                 <div class="gilas-hero__controls" aria-label="کنترل اسلایدهای خانه">
@@ -178,7 +178,7 @@
 
     <section class="gilas-manifesto" aria-labelledby="gilas-manifesto-title" data-gilas-reveal>
         <div class="gilas-container gilas-manifesto__inner">
-            <p class="gilas-kicker">GILAS / A PLACE TO STAY</p>
+            <p class="gilas-kicker">A PLACE TO STAY / EAT WELL</p>
             <h2 id="gilas-manifesto-title">کمتر عجله کن،<br><em>بیشتر مزه کن.</em></h2>
             <p>{{ $restaurant?->description ?: 'برای یک گفت‌وگوی خوب، یک بشقاب دل‌چسب و لحظه‌ای دور از شلوغی روزمره.' }}</p>
             <div class="gilas-manifesto__actions">
