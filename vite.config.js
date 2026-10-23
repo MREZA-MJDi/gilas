@@ -14,7 +14,6 @@ export default defineConfig({
                 'resources/css/home-hero.css',
                 'resources/js/app.js',
                 'resources/js/customer.js',
-                'resources/js/landing.js',
                 'resources/js/admin.js',
                 'resources/js/storefront.js',
             ],
