@@ -8,11 +8,22 @@ use App\Http\Controllers\Customer\PublicMenuController;
 use App\Http\Controllers\Customer\PublicMenuItemController;
 use App\Http\Controllers\Customer\PublicPageController;
 use App\Http\Controllers\Customer\PublicReservationController;
+use App\Http\Controllers\Customer\QrCartShortcutController;
 use App\Http\Controllers\Customer\TableOrderingController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/storefront', HomeController::class)->name('storefront.index');
+
+// Compatibility URLs for the imported resource views, backed by the Gilas menu domain.
+Route::get('/shop', [PublicMenuController::class, 'index'])->name('shop.index');
+Route::get('/products', [PublicMenuController::class, 'index'])->name('products.index');
+Route::get('/products/{slug}', [PublicMenuItemController::class, 'show'])
+    ->where('slug', '[A-Za-z0-9_-]+')
+    ->name('products.show');
+Route::get('/cart', QrCartShortcutController::class)->name('cart.index');
+Route::get('/checkout', QrCartShortcutController::class)->name('checkout.index');
 
 Route::get('/menu', [PublicMenuController::class, 'index'])->name('menu.index');
 Route::get('/menu/category/{slug}', [PublicMenuController::class, 'category'])
@@ -51,13 +62,8 @@ Route::prefix('admin')->group(function () {
 
     Route::middleware('auth')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
-
-        // Preserve the established dashboard URL so existing bookmarks keep working.
         Route::get('/{restaurant}/dashboard', AdminDashboardController::class)->name('admin.dashboard');
-
-        // Keep the newer, resource-oriented URL as an alias.
         Route::get('/restaurants/{restaurant}', AdminDashboardController::class)->name('admin.dashboard.overview');
-
         Route::post('/restaurants/{restaurant:slug}/payments/{payment}/cashier-paid', [PaymentController::class, 'markCashierPaid'])
             ->middleware('can:markCashierPaid,payment')
             ->name('admin.payments.cashier-paid');

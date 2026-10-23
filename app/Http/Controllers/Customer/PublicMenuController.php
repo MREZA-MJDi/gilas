@@ -10,56 +10,83 @@ use Illuminate\View\View;
 
 class PublicMenuController extends Controller
 {
-    public function __construct(
-        private readonly MenuCatalogService $catalog,
-    ) {
+    public function __construct(private readonly MenuCatalogService $catalog)
+    {
     }
 
     public function index(Request $request): View
     {
-        return $this->render($request->query('category'));
+        return $this->render($request->query('category'), $this->searchTerm($request), $this->sortTerm($request));
     }
 
-    public function category(string $slug): View
+    public function category(Request $request, string $slug): View
     {
-        return $this->render($slug);
+        return $this->render($slug, $this->searchTerm($request), $this->sortTerm($request));
     }
 
-    private function render(?string $categorySlug): View
+    private function searchTerm(Request $request): string
+    {
+        return is_string($request->query('q')) ? trim($request->query('q')) : '';
+    }
+
+    private function sortTerm(Request $request): string
+    {
+        $sort = $request->query('sort');
+
+        return in_array($sort, ['default', 'name', 'price_asc', 'price_desc', 'newest'], true)
+            ? $sort
+            : 'default';
+    }
+
+    private function render(?string $categorySlug, string $search, string $sort): View
     {
         $restaurant = $this->primaryRestaurantOrFail();
         $categories = $this->catalog->forRestaurant($restaurant)->values();
-        $selectedSlug = is_string($categorySlug) ? trim($categorySlug) : null;
+        $selectedSlug = is_string($categorySlug) && trim($categorySlug) !== '' ? trim($categorySlug) : null;
 
-        if ($selectedSlug !== null && $selectedSlug !== '') {
+        if ($selectedSlug !== null) {
             abort_unless($categories->contains(fn ($category) => $category->slug === $selectedSlug), 404);
-
-            $menu = $categories
-                ->filter(fn ($category) => $category->slug === $selectedSlug)
-                ->values();
-        } else {
-            $menu = $categories;
         }
 
-        return view('customer.menu', [
-            'restaurant' => $restaurant,
-            'categories' => $categories,
-            'menu' => $menu,
-            'selectedSlug' => $selectedSlug,
-        ]);
+        $matchingCategories = $categories->map(function ($category) use ($search, $sort) {
+            $items = $category->items;
+
+            if ($search !== '') {
+                $needle = mb_strtolower($search, 'UTF-8');
+                $items = $items->filter(function ($item) use ($needle) {
+                    $haystack = mb_strtolower($item->name . ' ' . ($item->description ?? ''), 'UTF-8');
+
+                    return mb_strpos($haystack, $needle) !== false;
+                });
+            }
+
+            $items = match ($sort) {
+                'price_asc' => $items->sortBy(fn ($item) => (int) ($item->variants->first()?->price ?? $item->price)),
+                'price_desc' => $items->sortByDesc(fn ($item) => (int) ($item->variants->first()?->price ?? $item->price)),
+                'name' => $items->sortBy('name', SORT_NATURAL),
+                'newest' => $items->sortByDesc('id'),
+                default => $items->sortBy('sort_order'),
+            };
+
+            $category->setRelation('items', $items->values());
+
+            return $category;
+        });
+
+        $menu = $selectedSlug !== null
+            ? $matchingCategories->filter(fn ($category) => $category->slug === $selectedSlug)->values()
+            : ($search !== '' ? $matchingCategories->filter(fn ($category) => $category->items->isNotEmpty())->values() : $matchingCategories);
+
+        return view('store.index', compact('restaurant', 'categories', 'menu', 'selectedSlug', 'search', 'sort'));
     }
 
     private function primaryRestaurantOrFail(): Restaurant
     {
-        $query = Restaurant::query()
-            ->where('status', 'active')
-            ->with('settings');
-
+        $query = Restaurant::query()->where('status', 'active')->with('settings');
         $configuredSlug = config('gilas.primary_restaurant_slug');
 
         if (is_string($configuredSlug) && trim($configuredSlug) !== '') {
             $restaurant = (clone $query)->where('slug', trim($configuredSlug))->first();
-
             if ($restaurant) {
                 return $restaurant;
             }

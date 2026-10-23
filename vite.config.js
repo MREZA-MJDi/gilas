@@ -3,12 +3,27 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-    plugins:[
-        laravel({input:[
-            'resources/css/app.css','resources/css/customer.css','resources/css/landing.css','resources/css/admin.css',
-            'resources/js/app.js','resources/js/customer.js','resources/js/landing.js','resources/js/admin.js'
-        ],refresh:true}),
+    plugins: [
+        laravel({
+            input: [
+                'resources/css/app.css',
+                'resources/css/customer.css',
+                'resources/css/landing.css',
+                'resources/css/admin.css',
+                'resources/css/storefront.css',
+                'resources/css/home-hero.css',
+                'resources/js/app.js',
+                'resources/js/customer.js',
+                'resources/js/admin.js',
+                'resources/js/storefront.js',
+            ],
+            refresh: true,
+        }),
         tailwindcss(),
     ],
-    server:{host:'0.0.0.0',allowedHosts:['terminal.local'],watch:{ignored:['**/storage/framework/views/**']}},
+    server: {
+        host: '0.0.0.0',
+        allowedHosts: ['terminal.local'],
+        watch: { ignored: ['**/storage/framework/views/**'] },
+    },
 });
