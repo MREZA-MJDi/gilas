@@ -29,7 +29,6 @@
 .home-hero__image-stage { position:absolute; z-index:2; inset:10% 28% 10% 30%; display:grid; place-items:center; overflow:visible; pointer-events:none; isolation:isolate; }
 .home-hero__image-stage img { position:relative; display:block; width:100%; height:100%; min-width:0; min-height:0; max-width:100%; max-height:100%; border-radius:50%; object-fit:cover; object-position:center; filter:drop-shadow(0 25px 22px rgba(12,29,21,.28)); mix-blend-mode:normal; opacity:.98; transition:opacity 180ms ease,transform 360ms cubic-bezier(.2,.8,.2,1); }
 .home-hero__image-stage img[hidden] { display:none!important; }
-.home-hero__image-stage::before { position:absolute; z-index:-1; inset:10% 8%; border:10px solid #fbf9f3; border-radius:50%; background:radial-gradient(circle,#fffdf8 0 57%,#d9e2d3 58% 65%,#fbf9f3 66%); content:""; }
 .home-hero__image-missing { position:absolute; z-index:3; inset:0; display:grid; place-items:center; padding:22px; color:rgba(251,249,243,.8); font-size:11px; line-height:1.8; text-align:center; }
 .home-hero__image-missing[hidden] { display:none!important; }
 .home-hero__image-caption { position:absolute; z-index:6; bottom:7%; left:50%; display:grid; justify-items:center; gap:3px; width:min(30%,260px); transform:translateX(-50%); color:rgba(251,249,243,.9); text-align:center; pointer-events:none; }
@@ -75,8 +74,7 @@
  body.storefront-home-body .home-hero__nav { top:54px; left:50%; width:calc(100% - 20px); max-width:none; justify-content:flex-start; gap:3px; padding:4px; overflow-x:auto; scrollbar-width:none; transform:translateX(-50%); }
  body.storefront-home-body .home-hero__nav-link { flex:0 0 auto; min-height:34px; padding:8px 10px; font-size:10px; }
  body.storefront-home-body .home-hero__image-stage { inset:17% 13% 43%; }
- body.storefront-home-body .home-hero__image-stage::before { inset:8%; border-width:8px; }
- body.storefront-home-body .home-hero__image-caption { display:none; }
+ body.storefront-home-body  body.storefront-home-body .home-hero__image-caption { display:none; }
  body.storefront-home-body .home-hero__price-panel { top:auto; right:16px; bottom:145px; left:16px; width:auto; transform:none; align-items:flex-start; display:grid; grid-template-columns:1fr auto; grid-template-areas:"label label" "price stock" "variants variants"; }
  body.storefront-home-body .home-hero__price-label { grid-area:label; }
  body.storefront-home-body .home-hero__price { grid-area:price; margin-top:2px; font-size:18px; }

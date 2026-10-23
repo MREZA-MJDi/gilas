@@ -67,11 +67,8 @@
             <div class="home-hero__image-stage" data-home-hero-stage data-base-image="{{ $hero['image'] ?? '' }}">
                 <div class="gilas-home-plate">
                     <div class="gilas-home-steam" aria-hidden="true"><i></i><i></i><i></i></div>
-                    @if($hero && $hero['image'])
-                        <img data-home-hero-image src="{{ $hero['image'] }}" alt="{{ $hero['name'] }}" fetchpriority="high" decoding="async">
-                    @else
-                        <div class="home-hero__image-missing" data-home-hero-image-missing><span>تصویر غذای واقعی از پنل منو نمایش داده می‌شود.</span></div>
-                    @endif
+                    <img data-home-hero-image src="{{ $hero['image'] ?? '' }}" alt="{{ $hero['name'] ?? ($restaurant?->name ?: 'گیلاس') }}" fetchpriority="high" decoding="async" @if(!($hero['image'] ?? null)) hidden @endif>
+                    <div class="home-hero__image-missing" data-home-hero-image-missing @if($hero['image'] ?? null) hidden @endif><span>تصویر غذای واقعی از پنل منو نمایش داده می‌شود.</span></div>
                 </div>
             </div>
             <div class="home-hero__image-caption" aria-live="polite">
