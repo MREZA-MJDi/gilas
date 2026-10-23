@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#284a3d">
+    <meta name="theme-color" content="#0b0908">
     <meta name="description" content="@yield('meta-description', $restaurant?->description ?: 'منوی گیلاس؛ غذاها، نوشیدنی‌ها، رزرو میز و سفارش مستقیم از میز.')">
     <link rel="canonical" href="@yield('canonical', url()->current())">
     <meta property="og:site_name" content="{{ $restaurant?->name ?: 'گیلاس' }}">
@@ -32,7 +32,8 @@
     @stack('styles')
 </head>
 <body class="customer-page storefront-body {{ request()->routeIs('home', 'storefront.index') ? 'storefront-home-body' : '' }}">
-<div class="customer-shell store-shell" data-storefront>
+<div class="customer-shell store-shell {{ request()->routeIs('home', 'storefront.index') ? 'store-shell--home' : '' }}" data-storefront>
+    @unless(request()->routeIs('home', 'storefront.index'))
     <header class="gilas-site-header store-gilas-header">
         <div class="gilas-site-header__inner">
             <a class="gilas-site-brand" href="{{ route('home') }}" aria-label="صفحه اصلی {{ $restaurant?->name ?: 'گیلاس' }}">
@@ -62,6 +63,7 @@
             </div>
         </div>
     </header>
+    @endunless
 
     @if(session('status'))
         <div class="store-session-status" role="status">{{ session('status') }}</div>
