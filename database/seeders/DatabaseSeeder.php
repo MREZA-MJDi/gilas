@@ -7,10 +7,11 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Seed only the restaurant's real configuration baseline.
+     * Menu items, tables, hours, customers and orders are never fabricated.
      */
     public function run(): void
     {
-        $this->call(GilasDemoSeeder::class);
+        $this->call(GilasRestaurantSeeder::class);
     }
 }
