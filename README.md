@@ -1,47 +1,47 @@
 # Gilas — Restaurant Website & Table Ordering
 
-Gilas is a restaurant-focused web application with public pages for its story, experience, location, reservation information, menus and menu items. The routes also include QR/token-based table ordering and customer order tracking, alongside an administration area. Verify the current implementation and provider configuration before relying on a workflow in production.
-
-## Dedicated dashboard
-Gilas includes its own dedicated dashboard for the restaurant management workflow, alongside the public menu and customer table-ordering experience. Verify order handling, authorization, and any integrations against the current implementation before production use.
+Gilas is a Laravel restaurant application with public pages for the restaurant story, menu, menu-item details, table QR ordering, order tracking, reservations and an administration area.
 
 ## Stack
-- PHP `^8.2`, Laravel `^12.0`
+
+- PHP ^8.2, Laravel ^12.0
 - Vite 7, Tailwind CSS 4 and Laravel Vite integration
 - Blade, Eloquent, migrations and seeders
-- PHPUnit tests
+- PHPUnit
 
-## Requirements
-PHP 8.2+, Composer, Node.js/npm, and a supported database.
+## Local setup (Windows / XAMPP)
 
-## Install locally
-```bash
-git clone https://github.com/MREZA-MJDi/gilas.git
-cd gilas
-composer install
-```
+    git clone https://github.com/MREZA-MJDi/gilas.git
+    cd gilas
+    composer install
+    copy .env.example .env
 
-Copy `.env.example` to `.env` (`copy .env.example .env` on Windows CMD; `cp .env.example .env` on macOS/Linux), create a local database, and configure `DB_*` values.
+Create a MySQL database named gilas in phpMyAdmin. Update .env with the restaurant's actual details. To create the first owner during seeding, fill in GILAS_OWNER_NAME, GILAS_OWNER_EMAIL and a strong GILAS_OWNER_PASSWORD in the private .env file.
 
-```bash
-php artisan key:generate
-php artisan migrate
-npm install
-npm run build
-php artisan storage:link
-php artisan serve
-```
+    php artisan key:generate
+    php artisan config:clear
+    php artisan migrate --seed
+    npm install
+    npm run build
+    php artisan storage:link
+    php artisan serve
 
-Open `http://127.0.0.1:8000`. Run `npm run dev` separately while developing frontend assets.
+Open http://127.0.0.1:8000. Run npm run dev separately during frontend development.
+
+## Initial data policy
+
+The default seeder is production-oriented and idempotent. It provisions the restaurant record, its settings and editable catalog categories. It does not create fake menu items/prices/photos, fake customers, sample orders/payments, invented table layouts, fake opening hours, or accounts with a known password.
+
+Enter the restaurant's real menu, prices, images, table layout and opening hours through the dashboard. Alternatively, extend the seeder with the restaurant's confirmed source data. Optional owner creation requires all three GILAS_OWNER_* values in .env; existing user passwords are not overwritten on re-seed. Re-running the seeder preserves details already edited in the dashboard.
+
+For an already-populated database, php artisan migrate --seed does not delete existing records. Back up important data before any manual cleanup; never run migrate:fresh on a database that must be preserved.
 
 ## Tests
-```bash
-php artisan test
-```
+
+    php artisan test
 
 ## Operational notes
-QR/table tokens should be treated as access-bearing values. Test order creation, validation, and order tracking before launch. Do not commit credentials or real customer/order data, and do not reset a database that contains data you need.
 
-## Links
+Treat QR/table tokens as access-bearing values. Verify order creation, validation, authorization, payment provider settings and order tracking before production launch. Never commit .env, credentials, or real customer/order data.
+
 - Repository: https://github.com/MREZA-MJDi/gilas
-- Laravel documentation: https://laravel.com/docs/12.x
