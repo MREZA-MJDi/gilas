@@ -1,32 +1,22 @@
 @php
-    $variant = $product->primaryAvailableVariant ?? $product->primaryActiveVariant;
-    $image = $product->primaryGalleryMedia?->url ?? $variant?->primaryGalleryMedia?->url;
-    $price = $variant?->effective_price;
-    $isSale = $variant?->is_on_sale;
+    $image = $item->image_path
+        ? \Illuminate\Support\Facades\Storage::disk('public')->url($item->image_path)
+        : null;
+    $price = (int) ($item->variants->first()?->price ?? $item->price);
 @endphp
-<article class="product-card">
-    <a class="product-card__image" href="{{ route('products.show', ['product' => $product->slug]) }}" aria-label="مشاهدهٔ {{ $product->name }}">
-        @if($image)
-            <img src="{{ $image }}" alt="{{ $product->name }}" loading="lazy" decoding="async">
-        @else
-            <span class="product-card__no-image"><span>V.</span><small>تصویر به‌زودی</small></span>
-        @endif
-        <span class="product-card__tag">{{ $product->is_featured ? 'انتخاب VISION' : 'مجموعهٔ VISION' }}</span>
-        @if($isSale)<span class="product-card__sale">قیمت ویژه</span>@endif
-        <span class="product-card__quick">مشاهدهٔ محصول ↗</span>
-    </a>
-    <div class="product-card__meta">
-        <div><span>{{ $product->brand?->name ?? $product->category?->name ?? 'VISION STUDIO' }}</span><h3><a href="{{ route('products.show', ['product' => $product->slug]) }}">{{ $product->name }}</a></h3></div>
-        <div class="product-price">
-            @if($price !== null)
-                @if($isSale)<del>@money($variant->price)</del>@endif
-                <strong>@money($price)</strong>
+<article class="menu-card">
+    <a class="menu-card__button" href="{{ route('menu.item', ['slug' => $item->slug]) }}" aria-label="جزئیات {{ $item->name }}">
+        <div class="menu-card__media">
+            @if($image)
+                <img src="{{ $image }}" alt="{{ $item->name }}" loading="lazy" decoding="async">
             @else
-                <strong>مشاهدهٔ محصولات</strong>
+                <span class="menu-card__no-image">تصویر غذا ثبت نشده</span>
             @endif
+            <span class="menu-card__shine" aria-hidden="true"></span>
         </div>
-    </div>
-    @if($variant && $variant->stock < 1)
-        <p class="product-card__stock">فعلاً ناموجود</p>
-    @endif
+        <div class="menu-card__body">
+            <div><span class="menu-card__category">{{ $item->category?->name ?: 'منوی گیلاس' }}</span><h3>{{ $item->name }}</h3>@if($item->description)<p>{{ $item->description }}</p>@endif</div>
+            <div class="menu-card__footer"><strong>{{ number_format($price) }} {{ $restaurant->currency }}</strong><span class="menu-card__cta">جزئیات غذا</span></div>
+        </div>
+    </a>
 </article>

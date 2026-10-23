@@ -31,6 +31,11 @@ const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').mat
     bind();
     renderCart();
 
+    // Preserve the real QR-table cart and let the compatibility shortcut reopen it.
+    if (new URLSearchParams(window.location.search).get('openCart') === '1') {
+        openCart();
+    }
+
     function bind() {
         all('[data-open-item]').forEach((button) => {
             button.addEventListener('click', () => openItem(button.dataset.openItem));

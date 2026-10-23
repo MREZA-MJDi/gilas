@@ -20,29 +20,19 @@ class PublicMenuItemController extends Controller
             ->where('is_available', true)
             ->with([
                 'category:id,restaurant_id,name,slug',
-                'variants' => fn ($query) => $query
-                    ->where('is_active', true)
-                    ->orderBy('sort_order'),
-                'options' => fn ($query) => $query
-                    ->where('is_active', true)
+                'variants' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order'),
+                'options' => fn ($query) => $query->where('is_active', true)
                     ->orderBy('sort_order')
-                    ->with([
-                        'values' => fn ($valueQuery) => $valueQuery
-                            ->where('is_active', true)
-                            ->orderBy('sort_order'),
-                    ]),
+                    ->with(['values' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order')]),
             ])
             ->firstOrFail();
 
-        return view('customer.menu-item', compact('restaurant', 'item'));
+        return view('store.products.show', compact('restaurant', 'item'));
     }
 
     private function primaryRestaurantOrFail(): Restaurant
     {
-        $query = Restaurant::query()
-            ->where('status', 'active')
-            ->with('settings');
-
+        $query = Restaurant::query()->where('status', 'active')->with('settings');
         $configuredSlug = config('gilas.primary_restaurant_slug');
 
         if (is_string($configuredSlug) && trim($configuredSlug) !== '') {

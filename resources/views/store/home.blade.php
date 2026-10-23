@@ -1,259 +1,178 @@
 @extends('layouts.store')
 
-@section('title', 'VISION — فروشگاه پوشاک')
-@section('meta-description', 'مجموعه‌ای منتخب از پوشاک و اکسسوری‌های VISION؛ محصولات واقعی، قیمت‌های به‌روز و خرید امن.')
-@section('canonical', route('storefront.index'))
-@section('og-image', $heroProduct?->primaryAvailableVariant?->primaryGalleryMedia?->url ?: $heroProduct?->primaryGalleryMedia?->url)
+@section('title', ($restaurant?->name ?: 'گیلاس') . ' — تجربهٔ غذا و کافه')
+@section('meta-description', $restaurant?->description ?: 'غذاها و نوشیدنی‌های منوی واقعی گیلاس را کشف کن و برای میزت هماهنگ شو.')
+@section('canonical', route('home'))
+@section('og-image', $restaurant?->cover_image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($restaurant->cover_image_path) : '')
 
-@section('content')
 @php
-    $formatPrice = static fn ($amount) => \App\Support\Money::format($amount);
-    $heroVariant = $heroProduct?->primaryAvailableVariant ?? $heroProduct?->primaryActiveVariant;
-    $heroImage = $heroVariant?->primaryGalleryMedia?->url ?? $heroProduct?->primaryGalleryMedia?->url;
-    $heroSlides = ($heroProducts ?? collect())->map(function ($product) use ($formatPrice) {
-        $variant = $product->primaryAvailableVariant ?? $product->primaryActiveVariant;
-        $image = $variant?->primaryGalleryMedia?->url ?? $product->primaryGalleryMedia?->url;
-        $color = preg_match('/^#[0-9a-fA-F]{3,6}$/', (string) $variant?->color_code)
-            ? $variant->color_code
-            : '#9a5527';
+    $coverImage = $restaurant?->cover_image_path
+        ? \Illuminate\Support\Facades\Storage::disk('public')->url($restaurant->cover_image_path)
+        : '';
+    $heroItems = collect($featuredItems ?? [])->values()->map(function ($item) use ($restaurant, $coverImage) {
+        $image = $item->image_path
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($item->image_path)
+            : $coverImage;
 
         return [
-            'id' => $product->getKey(),
-            'name' => $product->name,
-            'description' => $product->short_description ?: $product->description ?: 'انتخابی دقیق برای کمدی که با تو حرکت می‌کند.',
-            'url' => route('products.show', ['product' => $product->slug]),
+            'id' => $item->id,
+            'name' => $item->name,
+            'description' => $item->description ?: 'از انتخاب‌های منوی رستوران؛ با جزئیات واقعی و قیمت ثبت‌شده.',
+            'url' => route('menu.item', ['slug' => $item->slug]),
             'image' => $image,
-            'color' => $color,
-            'variant_label' => $variant?->color ?: ($variant?->size ?: 'انتخاب VISION'),
-            'price' => $variant ? $formatPrice($variant->effective_price) : 'قیمت نامشخص',
-            'original_price' => $variant?->is_on_sale ? $formatPrice($variant->price) : null,
-            'stock' => $variant && (int) $variant->stock > 0 ? number_format((int) $variant->stock) . ' عدد موجود' : 'فعلاً ناموجود',
+            'price' => number_format((int) $item->price) . ' ' . ($restaurant?->currency ?: 'تومان'),
+            'label' => $item->category?->name ?: 'از منوی گیلاس',
+            'theme' => '#284a3d',
         ];
-    })->values();
+    });
+    $hero = $heroItems->first();
 @endphp
 
-<main class="store-main store-home">
-    {{-- The split-color editorial hero follows the supplied visual reference. --}}
-    <section class="home-hero" aria-labelledby="home-hero-title" data-home-hero
-             style="--home-hero-base: {{ data_get($heroSlides, '0.color', '#9a5527') }}">
+@section('content')
+<main class="store-main store-home gilas-store-home">
+    <section class="home-hero" aria-labelledby="home-hero-title" data-home-hero style="--home-hero-base:#284a3d">
         <div class="home-hero__frame">
             <div class="home-hero__frame-brand">
-                <a href="{{ route('storefront.index') }}" aria-label="صفحهٔ اصلی VISION">
-                    <strong>VISION</strong>
-                    <small>EVERYDAY OBJECTS</small>
+                <a href="{{ route('home') }}" aria-label="صفحهٔ اصلی {{ $restaurant?->name ?: 'گیلاس' }}">
+                    <strong>{{ $restaurant?->name ?: 'گیلاس' }}</strong><small>CAFE · KITCHEN · TABLE</small>
                 </a>
             </div>
-
             <nav class="home-hero__nav" aria-label="دسترسی سریع">
-                @if($heroProduct)
-                    <a class="home-hero__nav-link home-hero__nav-link--current"
-                       href="{{ route('products.show', ['product' => $heroProduct->slug]) }}" data-home-hero-product-link>محصول ویژه</a>
-                @endif
-                <a class="home-hero__nav-link" href="{{ route('shop.index') }}">همهٔ محصولات</a>
+                <a class="home-hero__nav-link home-hero__nav-link--current" href="{{ route('menu.index') }}">منوی رستوران</a>
                 <a class="home-hero__nav-link" href="#home-categories">دسته‌بندی‌ها</a>
-                <a class="home-hero__nav-link" href="{{ route('shop.index', ['sale' => 1]) }}">تخفیف‌ها</a>
+                <a class="home-hero__nav-link" href="{{ route('public.reservation') }}">رزرو میز</a>
+                <a class="home-hero__nav-link" href="{{ route('public.location') }}">موقعیت</a>
             </nav>
-
             <div class="home-hero__top-actions">
-                <a class="home-hero__icon-button" href="{{ route('account.show') }}" aria-label="حساب کاربری" title="حساب کاربری">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.3"></circle><path d="M5.3 20c.5-3.4 2.8-5.3 6.7-5.3s6.2 1.9 6.7 5.3"></path></svg>
+                <a class="home-hero__icon-button" href="{{ route('public.reservation') }}" aria-label="رزرو میز" title="رزرو میز">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="15" rx="2"></rect><path d="M8 3.5v4M16 3.5v4M4 10h16"></path></svg>
                 </a>
-                <a class="home-hero__icon-button home-hero__cart" href="{{ route('cart.index') }}" aria-label="مشاهدهٔ سبد خرید" title="سبد خرید">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg>
-                    <span data-cart-count>0</span>
+                <a class="home-hero__icon-button home-hero__cart" href="{{ route('cart.index') }}" aria-label="سبد سفارش میز" title="سبد سفارش">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg><span aria-hidden="true">+</span>
                 </a>
             </div>
-
             <div class="home-hero__copy">
-                <div class="home-hero__slider-controls" aria-label="تغییر گزینهٔ محصول">
-                    <button type="button" data-home-hero-prev aria-label="گزینهٔ قبلی">‹</button>
-                    <button type="button" data-home-hero-next aria-label="گزینهٔ بعدی">›</button>
+                <div class="home-hero__slider-controls" aria-label="تغییر غذای پیشنهادی">
+                    <button type="button" data-home-hero-prev aria-label="غذای قبلی">‹</button>
+                    <button type="button" data-home-hero-next aria-label="غذای بعدی">›</button>
                 </div>
-                <p class="home-hero__eyebrow">مجموعهٔ منتخب VISION</p>
-                <h1 id="home-hero-title" class="home-hero__title" data-home-hero-title>متفاوت باش،<br>بدون تلاش اضافه</h1>
-                <p class="home-hero__description" data-home-hero-description>انتخاب‌هایی برای هر روز؛ طراحی دقیق، جزئیات حساب‌شده و پوشاکی هماهنگ با سبک تو.</p>
-                @if($heroProduct)
-                    <a class="home-hero__cta" href="{{ route('products.show', ['product' => $heroProduct->slug]) }}" data-home-hero-cta>
-                        <span>این محصول را ببین</span><span aria-hidden="true">↗</span>
-                    </a>
-                @else
-                    <a class="home-hero__cta" href="{{ route('shop.index') }}">
-                        <span>رفتن به فروشگاه</span><span aria-hidden="true">↗</span>
-                    </a>
-                @endif
-            </div>
-
-            @if($heroProduct)
-                <div class="home-hero__image-stage"
-                     data-home-hero-stage
-                     data-base-image="{{ $heroProduct->primaryGalleryMedia?->url ?? '' }}">
-                    <img data-home-hero-image
-                         src="{{ $heroImage ?? '' }}"
-                         alt="{{ $heroProduct->name }}"
-                         fetchpriority="high"
-                         decoding="async"
-                         @if(!$heroImage) hidden @endif>
-                    <div class="home-hero__image-missing" data-home-hero-image-missing @if($heroImage) hidden @endif>
-                        <span>برای این محصول هنوز تصویر واقعی ثبت نشده است.</span>
-                    </div>
-                </div>
-            @else
-                <div class="home-hero__image-missing home-hero__image-missing--empty">
-                    <span>برای نمایش محصول ویژه، ابتدا یک محصول فعال انتخاب کن.</span>
-                </div>
-            @endif
-
-            <div class="home-hero__image-caption" aria-live="polite">
-                <span>انتخاب VISION</span>
-                <strong data-home-hero-caption>{{ $heroVariant?->color ?: ($heroVariant?->size ?: ($heroProduct?->name ?? 'کالکشن جدید')) }}</strong>
-            </div>
-
-            @if($heroProduct)
-                <aside class="home-hero__price-panel" aria-label="قیمت و گزینه‌های محصول">
-                    <span class="home-hero__price-label">قیمت محصول</span>
-                    <strong class="home-hero__price" data-home-hero-price>{{ $heroVariant ? $formatPrice($heroVariant->effective_price) : 'قیمت نامشخص' }}</strong>
-                    <del class="home-hero__original-price"
-                         data-home-hero-original
-                         @if(!($heroVariant?->is_on_sale ?? false)) hidden @endif>{{ $heroVariant && $heroVariant->is_on_sale ? $formatPrice($heroVariant->price) : '' }}</del>
-                    <span class="home-hero__stock" data-home-hero-stock>
-                        @if($heroVariant && (int) $heroVariant->stock > 0)
-                            {{ number_format((int) $heroVariant->stock) }} عدد موجود
-                        @else
-                            فعلاً ناموجود
-                        @endif
-                    </span>
-
-                    @if($heroSlides->count() > 1)
-                        <div class="home-hero__variant-picker">
-                            <span class="home-hero__variant-label">کالکشن را ورق بزن</span>
-                            <div class="home-hero__variants" role="group" aria-label="انتخاب اسلاید محصول">
-                                @foreach($heroSlides as $index => $slide)
-                                    <button type="button"
-                                            class="home-hero__variant{{ $index === 0 ? ' is-selected' : '' }}"
-                                            data-home-hero-slide
-                                            data-title="{{ $slide['name'] }}"
-                                            data-description="{{ $slide['description'] }}"
-                                            data-url="{{ $slide['url'] }}"
-                                            data-price="{{ $slide['price'] }}"
-                                            data-original-price="{{ $slide['original_price'] ?? '' }}"
-                                            data-stock="{{ $slide['stock'] }}"
-                                            data-image="{{ $slide['image'] ?? '' }}"
-                                            data-image-alt="{{ $slide['name'] }}"
-                                            data-label="{{ $slide['variant_label'] }}"
-                                            data-theme="{{ $slide['color'] }}"
-                                            style="--home-hero-swatch: {{ $slide['color'] }}"
-                                            aria-label="نمایش {{ $slide['name'] }}"
-                                            title="{{ $slide['name'] }}"
-                                            aria-pressed="{{ $index === 0 ? 'true' : 'false' }}">
-                                            <span class="home-hero__variant-dot" aria-hidden="true"></span>
-                                            <span class="home-hero__variant-initial" aria-hidden="true">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                </aside>
-
-                <a class="home-hero__mini-product"
-                   href="{{ route('products.show', ['product' => $heroProduct->slug]) }}"
-                   aria-label="مشاهدهٔ {{ $heroProduct->name }}"
-                   data-home-hero-thumbnail-link
-                   @if(!$heroImage) hidden @endif>
-                    <img src="{{ $heroImage ?? '' }}"
-                         alt=""
-                         loading="lazy"
-                         decoding="async"
-                         data-home-hero-thumbnail
-                         @if(!$heroImage) hidden @endif>
+                <p class="home-hero__eyebrow">یک خانه برای طعم‌های خوب</p>
+                <h1 id="home-hero-title" class="home-hero__title" data-home-hero-title>طعم خوب،<br>جایی برای ماندن.</h1>
+                <p class="home-hero__description" data-home-hero-description>{{ $restaurant?->description ?: 'غذا و نوشیدنی را از منوی رستوران انتخاب کن؛ سفارش میز از QR همان میز ثبت می‌شود.' }}</p>
+                <a class="home-hero__cta" href="{{ $hero['url'] ?? route('menu.index') }}" data-home-hero-cta>
+                    <span>{{ $hero ? 'جزئیات این انتخاب' : 'کشف منوی غذا' }}</span><span aria-hidden="true">↗</span>
                 </a>
-            @endif
-
-            <div class="home-hero__social" aria-hidden="true">
-                <span>◎</span><span>f</span><span>𝕏</span><span>◇</span>
             </div>
 
-            <div class="home-hero__bottom">
-                <a href="#home-categories">دسته‌بندی‌ها</a>
-                <span aria-hidden="true">—</span>
-                <a href="{{ route('shop.index') }}">همهٔ محصولات</a>
+            <div class="home-hero__image-stage" data-home-hero-stage data-base-image="{{ $hero['image'] ?? '' }}">
+                <div class="gilas-home-plate">
+                    <div class="gilas-home-steam" aria-hidden="true"><i></i><i></i><i></i></div>
+                    @if($hero && $hero['image'])
+                        <img data-home-hero-image src="{{ $hero['image'] }}" alt="{{ $hero['name'] }}" fetchpriority="high" decoding="async">
+                    @else
+                        <div class="home-hero__image-missing" data-home-hero-image-missing><span>تصویر غذای واقعی از پنل منو نمایش داده می‌شود.</span></div>
+                    @endif
+                </div>
             </div>
+            <div class="home-hero__image-caption" aria-live="polite">
+                <span>از منوی واقعی گیلاس</span><strong data-home-hero-caption>{{ $hero['name'] ?? 'خانهٔ گیلاس' }}</strong>
+            </div>
+            <aside class="home-hero__price-panel" aria-label="اطلاعات انتخاب منو">
+                <span class="home-hero__price-label">انتخاب امروز</span>
+                <strong class="home-hero__price" data-home-hero-price>{{ $hero['price'] ?? 'منوی رستوران' }}</strong>
+                <span class="home-hero__stock" data-home-hero-stock>قیمت از اطلاعات ثبت‌شدهٔ رستوران</span>
+                @if($heroItems->count() > 1)
+                    <div class="home-hero__variant-picker">
+                        <span class="home-hero__variant-label">بین انتخاب‌ها جابه‌جا شو</span>
+                        <div class="home-hero__variants" role="group" aria-label="انتخاب غذای پیشنهادی">
+                            @foreach($heroItems as $index => $slide)
+                                <button type="button" class="home-hero__variant{{ $index === 0 ? ' is-selected' : '' }}"
+                                    data-home-hero-slide data-title="{{ $slide['name'] }}" data-description="{{ $slide['description'] }}"
+                                    data-url="{{ $slide['url'] }}" data-price="{{ $slide['price'] }}" data-stock="از منوی رستوران"
+                                    data-image="{{ $slide['image'] }}" data-image-alt="{{ $slide['name'] }}"
+                                    data-label="{{ $slide['label'] }}" data-theme="{{ $slide['theme'] }}"
+                                    aria-label="نمایش {{ $slide['name'] }}" title="{{ $slide['name'] }}"
+                                    aria-pressed="{{ $index === 0 ? 'true' : 'false' }}">
+                                    <span class="home-hero__variant-dot" aria-hidden="true"></span>
+                                    <span class="home-hero__variant-initial" aria-hidden="true">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </aside>
+            <a class="home-hero__mini-product" href="{{ $hero['url'] ?? route('menu.index') }}" data-home-hero-thumbnail-link @if(!($hero['image'] ?? null)) hidden @endif>
+                @if($hero && $hero['image'])
+                    <img src="{{ $hero['image'] }}" alt="" loading="lazy" decoding="async" data-home-hero-thumbnail>
+                @else
+                    <img src="" alt="" loading="lazy" decoding="async" data-home-hero-thumbnail hidden>
+                @endif
+            </a>
+            <div class="home-hero__bottom"><a href="#home-categories">دسته‌بندی‌ها</a><span aria-hidden="true">—</span><a href="{{ route('menu.index') }}">همهٔ منو</a></div>
         </div>
     </section>
 
-    {{-- Section 2: interactive six-face category cube, using real category/product media. --}}
-    @if($categories->isNotEmpty())
-        @php
-            $categoryCount = $categories->count();
-            $categoryCubeFaces = collect(range(0, 5))->map(
-                fn (int $faceIndex) => $categories->get($faceIndex % $categoryCount)
-            );
-            $categoryCubeFaceClasses = ['front', 'right', 'back', 'left', 'top', 'bottom'];
-        @endphp
-        <section class="home-section home-categories" id="home-categories" aria-labelledby="home-categories-title">
-            <div class="home-section__inner">
-                <div class="home-section__heading">
-                    <div>
-                        <p class="store-eyebrow">V I S I O N / C A T E G O R I E S</p>
-                        <h2 id="home-categories-title">انتخاب بر اساس استایل</h2>
-                        <p class="home-section__intro">دستهٔ موردعلاقه‌ات را بچرخان و مجموعه‌اش را ببین.</p>
-                    </div>
-                    <a class="home-section__link" href="{{ route('shop.index') }}">همهٔ محصولات <span aria-hidden="true">←</span></a>
+    <section class="home-section home-categories" id="home-categories" aria-labelledby="home-categories-title">
+        <div class="home-section__inner">
+            <div class="home-section__heading">
+                <div>
+                    <p class="store-eyebrow">گیلاس / منوی رستوران</p>
+                    <h2 id="home-categories-title">از کجا شروع کنیم؟</h2>
+                    <p class="home-section__intro">دسته‌ها و آیتم‌ها از اطلاعات فعال دیتابیس نمایش داده می‌شوند.</p>
                 </div>
-
-                <div class="home-category-cube" data-category-cube>
-                    <div class="home-category-cube__stage"
-                         data-category-cube-stage
-                         role="region"
-                         tabindex="0"
-                         aria-label="مکعب سه‌بعدی دسته‌بندی‌های فروشگاه">
-                        <div class="home-category-cube__container" data-category-cube-container>
-                            <div class="home-category-cube__object" data-category-cube-object>
-                                @foreach($categoryCubeFaces as $faceIndex => $category)
-                                    @php
-                                        $categoryImageProduct = $category->products->first();
-                                        $categoryImage = $category->coverMedia?->url
-                                            ?? $categoryImageProduct?->primaryGalleryMedia?->url
-                                            ?? $categoryImageProduct?->primaryAvailableVariant?->primaryGalleryMedia?->url
-                                            ?? $categoryImageProduct?->primaryActiveVariant?->primaryGalleryMedia?->url;
-                                    @endphp
-                                    <a class="home-category-cube__face home-category-cube__face--{{ $categoryCubeFaceClasses[$faceIndex] }}"
-                                       data-category-cube-face
-                                       data-category-name="{{ $category->name }}"
-                                       href="{{ route('shop.index', ['category_id' => $category->id]) }}"
-                                       aria-label="{{ $category->name }}، {{ number_format($category->active_products_count) }} محصول"
-                                       aria-current="{{ $loop->first ? 'true' : 'false' }}"
-                                       tabindex="{{ $loop->first ? '0' : '-1' }}">
-                                        @if($categoryImage)
-                                            <img class="home-category-cube__image home-category-card__image"
-                                                 src="{{ $categoryImage }}"
-                                                 alt=""
-                                                 loading="lazy"
-                                                 decoding="async">
-                                        @else
-                                            <span class="home-category-cube__placeholder" aria-hidden="true"></span>
-                                        @endif
-                                        <span class="home-category-cube__shade" aria-hidden="true"></span>
-                                        <span class="home-category-cube__number">{{ str_pad((string) ($faceIndex + 1), 2, '0', STR_PAD_LEFT) }}</span>
-                                        <span class="home-category-cube__content">
-                                            <strong class="home-category-cube__name">{{ $category->name }}</strong>
-                                            <span class="home-category-cube__meta">{{ number_format($category->active_products_count) }} محصول</span>
-                                        </span>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="home-category-cube__controls">
-                        <button type="button" data-category-cube-prev aria-label="نمای قبلی مکعب">‹</button>
-                        <span data-category-cube-status aria-live="polite">دسته: {{ $categoryCubeFaces->first()->name }}</span>
-                        <button type="button" data-category-cube-next aria-label="نمای بعدی مکعب">›</button>
-                        <span class="home-category-cube__hint">موس را حرکت بده یا از فلش‌ها استفاده کن</span>
-                    </div>
-                </div>
+                <a class="home-section__link" href="{{ route('menu.index') }}">دیدن همهٔ منو <span aria-hidden="true">←</span></a>
             </div>
-        </section>
-    @endif
+            @if($categories->isNotEmpty())
+                <div class="gilas-store-category-grid">
+                    @foreach($categories as $category)
+                        @php
+                            $categoryItem = $category->items->first();
+                            $categoryImage = $categoryItem?->image_path
+                                ? \Illuminate\Support\Facades\Storage::disk('public')->url($categoryItem->image_path)
+                                : null;
+                        @endphp
+                        <a class="gilas-store-category" href="{{ route('menu.category', ['slug' => $category->slug]) }}">
+                            <span class="gilas-store-category__number">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                            @if($categoryImage)
+                                <img src="{{ $categoryImage }}" alt="" loading="lazy" decoding="async">
+                            @else
+                                <span class="gilas-store-category__placeholder" aria-hidden="true">{{ mb_substr($category->name, 0, 1) }}</span>
+                            @endif
+                            <span class="gilas-store-category__body"><strong>{{ $category->name }}</strong><small>{{ $category->items->count() }} آیتم فعال</small></span>
+                            <span class="gilas-store-category__arrow" aria-hidden="true">↗</span>
+                        </a>
+                    @endforeach
+                </div>
+            @else
+                <div class="gilas-empty-state"><span class="gilas-empty-state__mark">✳</span><h3>منو در حال آماده شدن است.</h3><p>وقتی دسته‌ها و غذاهای واقعی در پنل رستوران ثبت شوند، این بخش به‌صورت خودکار پر می‌شود.</p></div>
+            @endif
+        </div>
+    </section>
 
+    <section class="home-section gilas-store-featured" aria-labelledby="gilas-store-featured-title">
+        <div class="home-section__inner">
+            <div class="home-section__heading">
+                <div><p class="store-eyebrow">پیشنهادهای خانه</p><h2 id="gilas-store-featured-title">از منوی خانه</h2><p class="home-section__intro">غذاهای فعال و قابل مشاهده؛ بدون قیمت یا عکس ساختگی.</p></div>
+                <a class="home-section__link" href="{{ route('menu.index') }}">مشاهدهٔ منو <span aria-hidden="true">←</span></a>
+            </div>
+            @if($featuredItems->isNotEmpty())
+                <div class="public-product-grid">
+                    @foreach($featuredItems as $item)
+                        <x-menu-item-card :item="$item" :restaurant="$restaurant" :category-name="$item->category?->name" />
+                    @endforeach
+                </div>
+            @else
+                <div class="gilas-empty-inline">هنوز آیتمی در منوی عمومی منتشر نشده است.</div>
+            @endif
+        </div>
+    </section>
+
+    <section class="gilas-store-reservation">
+        <div><p class="store-eyebrow">وقتِ خودت</p><h2>میزت را هماهنگ کن.<br><em>با خیال راحت برس.</em></h2><p>برای رزرو و هماهنگی زمان مراجعه، جزئیات را از صفحهٔ رزرو ببین.</p></div>
+        <div class="gilas-store-reservation__actions">
+            <a class="gilas-button gilas-button--dark" href="{{ route('public.reservation') }}">رزرو میز <span aria-hidden="true">↗</span></a>
+            <a class="gilas-button gilas-button--line" href="{{ route('public.location') }}">دیدن موقعیت</a>
+        </div>
+    </section>
 </main>
 @endsection
