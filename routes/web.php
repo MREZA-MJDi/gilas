@@ -7,6 +7,7 @@ use App\Http\Controllers\Customer\OrderTrackingController;
 use App\Http\Controllers\Customer\PublicMenuController;
 use App\Http\Controllers\Customer\PublicMenuItemController;
 use App\Http\Controllers\Customer\PublicPageController;
+use App\Http\Controllers\Customer\PublicReservationController;
 use App\Http\Controllers\Customer\TableOrderingController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,7 @@ Route::get('/menu/item/{slug}', [PublicMenuItemController::class, 'show'])
 
 Route::get('/experience', [PublicPageController::class, 'show'])->defaults('page', 'experience')->name('public.experience');
 Route::get('/reservation', [PublicPageController::class, 'show'])->defaults('page', 'reservation')->name('public.reservation');
+Route::post('/reservation', [PublicReservationController::class, 'store'])->middleware('throttle:8,1')->name('public.reservations.store');
 Route::get('/story', [PublicPageController::class, 'show'])->defaults('page', 'story')->name('public.story');
 Route::get('/location', [PublicPageController::class, 'show'])->defaults('page', 'location')->name('public.location');
 Route::get('/club', [PublicPageController::class, 'show'])->defaults('page', 'club')->name('public.club');

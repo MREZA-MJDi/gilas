@@ -28,19 +28,22 @@ class PublicMenuController extends Controller
     private function render(?string $categorySlug): View
     {
         $restaurant = $this->primaryRestaurantOrFail();
-        $menu = $this->catalog->forRestaurant($restaurant)->values();
-
+        $categories = $this->catalog->forRestaurant($restaurant)->values();
         $selectedSlug = is_string($categorySlug) ? trim($categorySlug) : null;
 
         if ($selectedSlug !== null && $selectedSlug !== '') {
-            abort_unless($menu->contains(fn ($category) => $category->slug === $selectedSlug), 404);
-            $menu = $menu
+            abort_unless($categories->contains(fn ($category) => $category->slug === $selectedSlug), 404);
+
+            $menu = $categories
                 ->filter(fn ($category) => $category->slug === $selectedSlug)
                 ->values();
+        } else {
+            $menu = $categories;
         }
 
         return view('customer.menu', [
             'restaurant' => $restaurant,
+            'categories' => $categories,
             'menu' => $menu,
             'selectedSlug' => $selectedSlug,
         ]);
@@ -56,6 +59,7 @@ class PublicMenuController extends Controller
 
         if (is_string($configuredSlug) && trim($configuredSlug) !== '') {
             $restaurant = (clone $query)->where('slug', trim($configuredSlug))->first();
+
             if ($restaurant) {
                 return $restaurant;
             }

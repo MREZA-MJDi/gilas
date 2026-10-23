@@ -9,6 +9,11 @@
         ? \Illuminate\Support\Facades\Storage::disk('public')->url($restaurant->logo_path)
         : null;
 
+    $featuredTableItem = $menu->first()?->items?->first();
+    $featuredTableImage = $featuredTableItem?->image_path
+        ? \Illuminate\Support\Facades\Storage::disk('public')->url($featuredTableItem->image_path)
+        : $coverUrl;
+
     $menuData = $menu->map(function ($category) {
         return [
             'id' => $category->id,
@@ -58,36 +63,36 @@
      data-currency="{{ $restaurant->currency }}"
      class="table-menu-page">
 
-    <header class="customer-header">
-        <div class="ui-shell customer-header__inner">
-            <a class="customer-brand" href="{{ route('home') }}">
-                <span class="customer-brand__mark">
-                    @if($logoUrl)
-                        <img src="{{ $logoUrl }}" alt="" width="42" height="42">
-                    @else
-                        <span>{{ mb_substr($restaurant->name, 0, 1) }}</span>
-                    @endif
-                </span>
-                <span><strong>{{ $restaurant->name }}</strong><small>سفارش مستقیم از میز</small></span>
-            </a>
-            <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[10px] font-bold text-white">
-                میز {{ $table->number }}
-            </span>
-        </div>
-    </header>
-
-    <section class="table-hero">
-        @if($coverUrl)
-            <div class="table-hero__media"><img src="{{ $coverUrl }}" alt="" width="1600" height="1000" loading="eager"></div>
-        @endif
-        <div class="table-hero__veil"></div>
-        <div class="table-hero__content">
-            <span class="ui-kicker" style="color:var(--c-peach)">منوی میز {{ $table->number }}</span>
-            <h1>چیزی که دلت می‌خواهد،<br>همین حالاست.</h1>
-            <p>{{ $restaurant->description ?: 'غذا و نوشیدنی را انتخاب کن؛ انتخاب‌ها و قیمت‌ها از منوی واقعی همین رستوران می‌آیند.' }}</p>
+    <section class="table-hero gilas-table-hero">
+        <div class="gilas-table-hero__copy table-hero__content">
+            <span class="gilas-eyebrow"><span class="gilas-eyebrow__line"></span> سفارش مستقیم از میز</span>
+            <span class="gilas-table-hero__table">میز {{ $table->number }} <i aria-hidden="true"></i></span>
+            <h1>از منو انتخاب کن،<br><em>ما تازه‌اش می‌کنیم.</em></h1>
+            <p>{{ $restaurant->description ?: 'غذا یا نوشیدنی‌ات را انتخاب و شخصی‌سازی کن. سفارش مستقیم برای همین میز ثبت می‌شود.' }}</p>
             <label class="table-search">
+                <span class="sr-only">جست‌وجو در غذا و نوشیدنی</span>
                 <input id="menu-search" type="search" autocomplete="off" placeholder="جست‌وجو در غذا و نوشیدنی…">
             </label>
+        </div>
+        <div class="gilas-table-hero__food">
+            <div class="gilas-table-hero__steam" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="gilas-table-hero__plate">
+                @if($featuredTableImage)
+                    <img src="{{ $featuredTableImage }}" alt="{{ $featuredTableItem?->name ?: $restaurant->name }}" width="1000" height="1000" fetchpriority="high" decoding="async">
+                @else
+                    <span>{{ mb_substr($featuredTableItem?->name ?: $restaurant->name, 0, 1) }}</span>
+                @endif
+            </div>
+            <div class="gilas-table-hero__food-note">
+                <span><small>از منوی واقعی</small><strong>{{ $featuredTableItem?->name ?: 'غذای امروز' }}</strong></span>
+                <span class="gilas-table-hero__food-price">
+                    @if($featuredTableItem)
+                        {{ number_format((int) $featuredTableItem->price) }} {{ $restaurant->currency }}
+                    @else
+                        منوی رستوران
+                    @endif
+                </span>
+            </div>
         </div>
     </section>
 

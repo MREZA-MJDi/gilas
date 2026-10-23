@@ -14,11 +14,17 @@ class OrderTrackingController extends Controller
     {
         $order = Order::query()
             ->where('public_token', $publicToken)
-            ->with(['restaurant:id,name,currency', 'table:id,number'])
+            ->with([
+                'restaurant:id,name,currency,logo_path,description,phone,address,cover_image_path',
+                'table:id,number',
+                'table.qrCode' => fn ($query) => $query->where('is_active', true),
+                'items.menuItem:id,name,image_path',
+            ])
             ->firstOrFail();
 
         return view('customer.order-waiting', [
             'order' => $order,
+            'restaurant' => $order->restaurant,
             'statusUrl' => route('customer.orders.status', $order->public_token),
         ]);
     }
