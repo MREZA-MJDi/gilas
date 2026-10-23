@@ -47,12 +47,19 @@ class PublicReservationFlowTest extends TestCase
         $this->assertDatabaseHas('reservations', [
             'restaurant_id' => $restaurant->id,
             'customer_id' => $customer->id,
-            'reservation_date' => $date,
-            'start_time' => '19:30:00',
             'guest_count' => 4,
             'status' => ReservationStatus::Pending->value,
             'customer_note' => 'میز آرام، لطفاً',
         ]);
+
+        // SQLite and MySQL serialize DATE/TIME columns differently; assert their normalized values.
+        $reservation = Reservation::query()
+            ->where('restaurant_id', $restaurant->id)
+            ->where('customer_id', $customer->id)
+            ->firstOrFail();
+
+        $this->assertSame($date, $reservation->reservation_date->format('Y-m-d'));
+        $this->assertSame('19:30', substr((string) $reservation->start_time, 0, 5));
     }
 
     public function test_reservation_request_is_rejected_when_online_reservations_are_disabled(): void
